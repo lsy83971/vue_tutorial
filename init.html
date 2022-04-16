@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="js/painter.js"></script>
+    <script src="js/mind_elixir.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>    
+    <style>
+      #map {
+	  height: 500px;
+	  width: 100%;
+      }
+
+      #show {
+	  height: 300px;
+	  width: 100%;
+	  overflow: auto;
+      }
+      
+    </style>
+  </head>
+  <body>
+    
+    {% raw %}
+    
+    <div id="xml">
+      <input v-model='xml'/>
+      <button v-on:click="run">run</button>
+    </div>
+    
+    <div id="map"></div>    
+
+    <div id="show">
+      <div>result:</div>
+      <div>{{info}}</div>
+    </div>        
+
+    <div id="save">
+      <input v-model='filename'/>      
+      <button v-on:click="save">save</button>      
+      <button v-on:click="load">load</button>
+      <div>{{info}}</div>
+    </div>
+
+    
+    {% endraw %}
+    
+    <script>
+      // init
+      function init(data=null) {
+	  if (data==null){
+	      data=MindElixir.new("topic")
+	  }else{
+	      data=data
+	  };
+	  mind = new MindElixir({
+	      el: '#map',
+	      direction: MindElixir.RIGHT,
+	      // create new map data
+	      data: data,
+	      // or set as data that is return from `.getAllData()`
+	      // data: {...},
+	      draggable: true, // default true
+	      contextMenu: true, // default true
+	      toolBar: true, // default true
+	      nodeMenu: true, // default true
+	      keypress: true, // default true
+	  })
+	  mind.init()
+	  console.log(mind)
+	  return mind
+      }
+      mind=init()
+    </script>
+
+    <script>
+      //file
+      var xml=new Vue({
+	  el: "#xml",
+	  data:{
+	      xml:"*.xml"
+	  },
+	  methods:{
+	      run: function(){
+		  mind_str=mind.getAllDataString()	      		  
+		  axios
+		      .post("/run",{
+			  xml:this.xml,
+			  data:mind_str,
+		      })
+		      .then(response => (show.info = response.data))
+		      .catch(function (error){
+			  console.log(error);
+		      });
+	      }
+	  }
+	  
+      })
+    </script>
+    
+    <script>
+      var show=new Vue({
+	  el: "#show",
+	  data:{
+	      info:"None"
+	  }
+      })
+    </script>
+    
+    <script type="text/javascript">
+      // save 
+      var save=new Vue({
+	  el: "#save",
+	  data: {
+	      info: "test",
+	      filename: "*.pkl"	      
+	  },
+	  methods:{
+	      save: function() {
+		  mind_str=mind.getAllDataString()
+		  axios
+		      .post("/save",
+			    {
+				data:mind_str,
+				filename:this.filename
+			    }
+			   )
+		      .then(response => (this.info = response.data))
+		      .catch(function (error){
+			  console.log(error);
+		      });
+	      },
+	      load: function() {
+		  mind_str=mind.getAllDataString()
+		  axios
+		      .post("/load",
+			    {
+				filename:this.filename
+			    }
+			   )
+		      .then(response => (this.info = response))
+		      .then(response => (mind = init(response.data)))
+		      .catch(function (error){
+			  console.log(error);
+		      });
+	      }
+	      
+	      
+	  }
+	  
+      })
+    </script>
+    
+  </body>
+</html>
