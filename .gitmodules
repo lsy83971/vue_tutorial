@@ -1,0 +1,3 @@
+[submodule "jsmind"]
+	path = jsmind
+	url = https://github.com/hizzgdev/jsmind.git
