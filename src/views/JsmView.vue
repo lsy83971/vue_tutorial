@@ -1,6 +1,20 @@
 <template>
-  
-<span class="dot"></span>
+
+<div id='data_selector' style='margin:3px;'>
+  <div>
+    <input id='saver_filename' />
+    <button @click='IOSave()'>saveJSM</button>
+  </div>
+  <div>    
+    <input class='input_file' id='loader_filename' type="file"  />
+    <button @click='IOLoad()'>loadJSM</button>
+  </div>
+  <div>      
+    <input class='input_file'
+	   id='json_loader_filename' type="file"  />
+    <button @click='FlaskLoadjson()'>loadJson</button>
+  </div>      
+</div>
 
 <div id='jsm_outer' style='height:800px;width:1000px;border-style:solid'>
   <div id='jsm_inner' style="overflow: auto;position: relative;width: 100%;height: 100%;">
@@ -23,25 +37,18 @@
 </template>
   </div>
 </div>
-<div>
-  <div id='data_selector' style='margin:3px;'>
-    <div>
-      <input id='saver_filename' />
-      <button @click='IOSave()'>saveJSM</button>
-    </div>
-    <div>    
-      <input class='input_file' id='loader_filename' type="file"  />
-      <button @click='IOLoad()'>loadJSM</button>
-    </div>
-    <div>      
-      <input class='input_file' id='json_loader_filename' type="file"  />
-      <button @click='FlaskLoadjson()'>loadJson</button>
-    </div>      
-  </div>
-</div>
-
+<div id='tree_result' style='margin:3px;'>
+  <!--textarea  v-for='(node, idx) in node_res' :key="idx">
+    {{node[0]['data']['PB01BH']}}
+    </textarea-->
+  <textarea  class='result_text' v-for='(node, idx) in node_res' :key="idx" :id='idx'
+	     @keydown='OnKeydownFixSize($event)'
+	     >
+    {{node}}
+  </textarea>
+  
+</div>    
 </template>
-
 <script>
 // todo only surfix
 // node_element.clientHeight;
@@ -177,7 +184,9 @@ export default {
 		"isalive":1,
 		"active_node":0,
 		
-	    }
+	    },
+	    node_res:{},
+	    res:{},
 	}
     },
     
@@ -192,14 +201,10 @@ export default {
 	this.SetThis();
 	$g('jsm_canvas').style.left='0px'
 	$g('jsm_canvas').style.right='0px'
-	
-	pxy=this;
-	utils.post('flask/run',{'a':1},(response => ($c(response.data))))
-	
-	
+	pxy = this;
     },
     updated() {
-	if (this.opts.isalive==1){
+	if (this.opts.isalive == 1){
   	    this.WatchThis();	    	    
   	    this.SetThis();	    
 	}
@@ -207,7 +212,11 @@ export default {
     methods: {
 	FlaskSendTree(){
 	    var s=this.IOTreeInfo();
-	    utils.post('flask/tree',s,(response => ($c(response.data))))
+	    utils.post('flask/tree',s,(response => {
+		pxy.node_res=response.data['node_res'];
+		pxy.res=response.data['res'];
+		$c("GG");
+	    }))
 	},
 	FlaskLoadjson(){
             var file_input = document.getElementById('json_loader_filename');
@@ -222,17 +231,10 @@ export default {
 	    }
 	    var f=function(result,name) {
 		var d = JSON.parse(result);
-		utils.post("flask/loaddata",d,
-			   (response => ($c(response.data)))
-			  )
-		pxy.info=d['info']
-		pxy.struct=d['struct']
-		pxy.opts=d['opts']
+		utils.post("flask/loaddata",d,(response => ($c(response.data))))
 		//pxy.WatchThis()
 	    }
 	    var text=utils.read(file_data,f)
-	    $c(text)
-	    $c('GG')	    
 	},
 	IOTreeInfo(){
 	    return {'info':this.info,
@@ -835,7 +837,7 @@ export default {
 }
 #data_selector div{
     margin: 5px;
-    width: 40%;
+    width: 300px;
 }
 
 #data_selector button{
