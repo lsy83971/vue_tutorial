@@ -1,4 +1,5 @@
 <template>
+  
 <span class="dot"></span>
 
 <div id='jsm_outer' style='height:800px;width:1000px;border-style:solid'>
@@ -22,15 +23,21 @@
 </template>
   </div>
 </div>
-<div style='position:absolute;margin-top:2px'>
-<div id='saver' style='margin-top:2px;float:left'>
-  <input style='width:245px' id='saver_filename' />
-  <button style='width:45px' @click='IOSave()'>save</button>
-</div>
-<div id='loader' style='margin-top:2px;'>
-  <input id='loader_filename' type="file" />
-  <button style='width:45px' @click='IOLoad()'>load</button>
-</div>
+<div>
+  <div id='data_selector' style='margin:3px;'>
+    <div>
+      <input id='saver_filename' />
+      <button @click='IOSave()'>saveJSM</button>
+    </div>
+    <div>    
+      <input class='input_file' id='loader_filename' type="file"  />
+      <button @click='IOLoad()'>loadJSM</button>
+    </div>
+    <div>      
+      <input class='input_file' id='json_loader_filename' type="file"  />
+      <button @click='FlaskLoadjson()'>loadJson</button>
+    </div>      
+  </div>
 </div>
 
 </template>
@@ -94,7 +101,7 @@ var opts={
     vspace:20,
     expandsize:14,
     node:{
-	v:'topic',
+	v:'as $f\n:root',
 	show:1,
 	sur:0
     }
@@ -169,7 +176,7 @@ export default {
 		"height":opts.height,
 		"isalive":1,
 		"active_node":0,
-
+		
 	    }
 	}
     },
@@ -202,10 +209,35 @@ export default {
 	    var s=this.IOTreeInfo();
 	    utils.post('flask/tree',s,(response => ($c(response.data))))
 	},
+	FlaskLoadjson(){
+            var file_input = document.getElementById('json_loader_filename');
+            var files = file_input.files;
+	    $c(file_input)
+	    $c(files)	    
+	    if(files.length == 0){
+		return 0
+	    }else{
+		var file_data = files[0];
+		$c(file_data)	    		
+	    }
+	    var f=function(result,name) {
+		var d = JSON.parse(result);
+		utils.post("flask/loaddata",d,
+			   (response => ($c(response.data)))
+			  )
+		pxy.info=d['info']
+		pxy.struct=d['struct']
+		pxy.opts=d['opts']
+		//pxy.WatchThis()
+	    }
+	    var text=utils.read(file_data,f)
+	    $c(text)
+	    $c('GG')	    
+	},
 	IOTreeInfo(){
 	    return {'info':this.info,
-		 'struct':this.struct,
-		 'opts':this.opts}
+		    'struct':this.struct,
+		    'opts':this.opts}
 	},
 	IOToJson(){
 	    return JSON.stringify(
@@ -394,7 +426,7 @@ export default {
 	    this.opts.isalive=0
 	    var desc=this.GetDescendantSur(i);
 	    desc=desc.concat([i])	    
-
+	    
 	    for (let j in desc){
 		delete(this.info[desc[j]])
 		delete(this.struct[desc[j]])
@@ -542,7 +574,7 @@ export default {
 		    var x2=p.x9
 		    var y2=p.y0
 		    this.SetLine(x1,y1,x2,y2,true)
-
+		    
 		    $c("HH")
 		}
 		
@@ -601,9 +633,17 @@ export default {
 	    n.x1=n.x0-n.w1/2
 	    n.x2=n.x0+n.w1/2
 	    
-	    n.x4=n.x2+opts.hspace
-	    n.x3=n.x4+n.w2/2
-	    n.x5=n.x4+n.w2
+	    
+	    if (this.struct[i].length>0){
+		n.x4=n.x2+opts.hspace
+		n.x3=n.x4+n.w2/2
+		n.x5=n.x4+n.w2
+	    }else{
+		n.x4=n.x2
+		n.x3=n.x2
+		n.x5=n.x2
+	    }
+	    
 	    
 	    if (n.sur!=0){
 		n.x9=n.x5+opts.hspace
@@ -728,7 +768,7 @@ export default {
 	    }else if (this.opts.active_node==id){
 		$c('goto activate mode:');	    
 		this.OnKeydownActiveMode(event)
-
+		
 	    }else{
 		$c('goto default mode:');	    		
 		this.OnKeydownFixSize(event);
@@ -747,7 +787,7 @@ export default {
 		var nodeid=this.AddNode(id);
 		//this.$nextTick(() => {this.ActiveOn(nodeid);})
 		break;
-
+		
 	    case 9:
 		var nodeid=this.ToggleNode(id);
 		break;
@@ -789,5 +829,31 @@ export default {
     border-color: red;
     border-width: 3px;    
 }
+#data_selector{
+    margin: 5px;
+    width: 40%;
+}
+#data_selector div{
+    margin: 5px;
+    width: 40%;
+}
+
+#data_selector button{
+    margin-top: 1px;
+    margin-bottom: 1px;    
+    width:30%;
+}
+#data_selector input{
+    margin-top: 1px;
+    margin-bottom: 1px;    
+    width:60%;
+    float:left; 
+}
+.input_file{
+    margin: 4px;
+    width:60%;
+    float:left    
+}
+
 
 </style>

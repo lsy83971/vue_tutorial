@@ -10,23 +10,33 @@ from flask import render_template_string, render_template
 from flask import request
 import json
 from pyxmind import calcTree
-
 app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")
 
-def run():
-    return 'test'
+load_file = {
+    "name": "None", 
+    "text": "",
+    "json": dict(), 
+}
+
+def loaddata():
+    data = json.loads(request.data)
+    load_file["json"] = data
+    print(data)
+    return "load json data success!"
 
 def tree():
     data = json.loads(request.data)
     ct = calcTree().from_treeinfo(data)
-    xmldata = {'a': 1, 'b': 2}
     res = {"err": "", "name": "", "data": xmldata}
     ct.nodes["root"].receive(res)
-    print([i for i in ct.nodes["root"]. iter()])
-    return json.dumps([i for i in ct.nodes["root"]. iter()])
+    ##print([i for i in ct.nodes["root"]. iter()])
+    res = [i for i in ct.nodes["root"]. iter()]
+    node_res = {i:j.stack for i, j in ct.nodes.items()}
+    tr = {"res": res, "node_res": node_res}
+    return json.dumps(tr)
 
 ## app.add_url_rule("/", "init", init, methods=["GET", "POST"])
-app.add_url_rule("/flask/run", "run", run, methods=["GET", "POST"])
+app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
 app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
 
 

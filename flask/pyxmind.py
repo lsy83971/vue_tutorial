@@ -1,4 +1,5 @@
 import traceback
+from copy import deepcopy
 ## TODO: OFF delete
 ## TODO:
 class codeParser:
@@ -72,6 +73,12 @@ class codeParser:
 
         
 class calcNode:
+    def __init__(self):
+        self.stack = list()
+
+    def clear(self):
+        self.stack = []
+    
     def hasChild(self):
         return len(self.chd) != 0
     
@@ -112,7 +119,9 @@ class calcNode:
             self.err = ""
         except:
             self.err=traceback.format_exc()
-            self.toData = self.err            
+            self.toData = self.err
+
+        self.stack.append(deepcopy(self.result()))
 
     def iterSur(self, res):
         sur = self.m.getNode(self.sur)
@@ -131,7 +140,8 @@ class calcNode:
         tp = self.ci.h0
         tp1 = self.ci.h1        
         if tp == "off":
-            raise Exception("node off")
+            return
+            ##raise Exception("node off")
         
         if self.fromErr != "":
             return
@@ -163,9 +173,11 @@ class calcTree:
         self.sur = {i:j["sur"] for i, j in self.info.items()}
         self.nodes = dict()
         for i, j in self.info.items():
-            nodeinfo = {"code": j["v"], 
-                        "chd": self.struct[i], 
-                        "sur": j["sur"]}
+            nodeinfo = {
+                "id": i, 
+                "code": j["v"], 
+                "chd": self.struct[i], 
+                "sur": j["sur"]}
             n = calcNode().from_nodeinfo(nodeinfo)
             self.nodes[i] = n
 
@@ -178,15 +190,14 @@ class calcTree:
 
 if __name__ == "__main__":
     data = {'info': {'root': {'v': 'as_id\n$f\n:root', 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 182, 'h2': 130, 'w2_add': 212, 'h4': 0, 'w4': 0, 'w4_add': 0, 'w3': 394, 'h3': 130, 'x0': 0, 'x1': -91, 'x2': 91, 'x4': 121, 'x3': 212, 'x5': 303, 'x6': -91, 'x7': 303, 'y0': 0, 'y1': -27.5, 'y2': 27.5, 'y3': -65, 'y4': 65, 'y5': -65, 'y6': 65, 'y7': 0, 'y8': 0, 'x9': 333, 'x11': 519, 'x10': 426}, 'c_0': {'v': "as\n$f['a']\n:c1", 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 0, 'h2': 0, 'w2_add': 0, 'h4': 0, 'w4': 0, 'w4_add': 0, 'w3': 182, 'h3': 55, 'x0': 212, 'x1': 121, 'x2': 303, 'x4': 333, 'x3': 333, 'x5': 333, 'x6': 121, 'x7': 333, 'y0': -37.5, 'y1': -65, 'y2': -10, 'y3': -37.5, 'y4': -37.5, 'y5': -65, 'y6': -10, 'y7': -37.5, 'y8': -37.5, 'x9': 363, 'x11': 549, 'x10': 456}, 'c_1': {'v': "as\n$f['b']\n:c2", 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 0, 'h2': 0, 'w2_add': 0, 'h4': 75, 'w4': 0, 'w4_add': 0, 'w3': 182, 'h3': 55, 'x0': 212, 'x1': 121, 'x2': 303, 'x4': 333, 'x3': 333, 'x5': 333, 'x6': 121, 'x7': 333, 'y0': 37.5, 'y1': 10, 'y2': 65, 'y3': 37.5, 'y4': 37.5, 'y5': 10, 'y6': 65, 'y7': 0, 'y8': 75, 'x9': 363, 'x11': 549, 'x10': 456}}, 'struct': {'root': ['c_0', 'c_1'], 'c_0': [], 'c_1': []}, 'opts': {'cNO': 14, 'offset_x': 191, 'offset_y': 115, 'width': 1022, 'height': 800, 'isalive': 1, 'active_node': 0}}
-    
+    xmldata = {"a": 1, "b": 2}
     ct = calcTree().from_treeinfo(data)
     ct.nodes["root"].receive({"err": "", "name": "", "data": xmldata})
 
-    
-    len([i for i in ct.nodes["root"]. iter()])
     [i for i in ct.nodes["root"]. iter()]
 
-    
+    ct.nodes["root"]. stack
+    ct.nodes["c_0"]. stack    
 
 
     
