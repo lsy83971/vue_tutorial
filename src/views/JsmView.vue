@@ -1,7 +1,4 @@
-
-
 <template>
-  
 <span class="dot"></span>
 
 <div id='jsm_outer' style='height:800px;width:1000px;border-style:solid'>
