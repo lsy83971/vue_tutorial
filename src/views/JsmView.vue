@@ -1,5 +1,4 @@
 <template>
-
 <div id='data_selector' style='margin:3px;'>
   <div>
     <input id='saver_filename' />
@@ -16,38 +15,112 @@
   </div>      
 </div>
 
-<div id='jsm_outer' style='height:800px;width:1000px;border-style:solid'>
+<div id='jsm_outer'
+     style='height:800px;width:1000px;
+	    border-style:solid;
+	    margin:5px
+	    '>
   <div id='jsm_inner' style="overflow: auto;position: relative;width: 100%;height: 100%;">
     <canvas id='jsm_canvas' style='position:absolute' z-index='1' />    
-<template  v-for='(node, idx) in info' :key="idx">
-  <textarea
-    style='z-index:auto;text-overflow:ellipsis;outline:none'
-    @focus='OnFocus($event)'
-    @blur='OnBlur($event)'
-    @keydown='OnKeydown($event)'
-    v-model='node.v'
-    :id='idx'
-    :class="{'readonly': ActiveNodeIs(idx),
-	     'onalive': ActiveNodeIs(idx),
-	    }">
-  </textarea>
-  <span class='dot'
+    <template  v-for='(node, idx) in info' :key="idx">
+      <textarea
+	style='z-index:auto;text-overflow:ellipsis;outline:none'
+	@focus='OnFocus($event)'
+	@blur='OnBlur($event)'
+	@keydown='OnKeydown($event)'
+	v-model='node.v'
+	:id='idx'
+	:class="{'readonly': ActiveNodeIs(idx),
+		'onalive': ActiveNodeIs(idx),
+		}">
+      </textarea>
+      <span class='dot'
 	@click='OnClickExpander($event)'        
-	:id="'e_'+idx"></span>
-</template>
+	    :id="'e_'+idx"></span>
+    </template>
   </div>
 </div>
+
 <div id='tree_result' style='margin:3px;'>
-  <!--textarea  v-for='(node, idx) in node_res' :key="idx">
-    {{node[0]['data']['PB01BH']}}
-    </textarea-->
-  <textarea  class='result_text' v-for='(node, idx) in node_res' :key="idx" :id='idx'
+  <div style="width:60px;margin:3px;">
+    <button style='width:100%' @click='FlaskSendTree()'>Run!</button>
+  </div>
+  <table class="table">
+    <colgroup>
+      <col width="60px" />
+      <col width="60px" />
+      <col width="200px" />
+    </colgroup>    
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>name</th>
+        <th>route</th>	
+      </tr>
+    </thead>
+    <tbody>
+      <template v-for='(nodes, idx) in node_res' :key="idx">
+	<template
+	  style="text-align:left"
+	  class="node_res"
+	  v-for='(node, idx) in nodes'
+	  :key="idx" :node_res_id="node.id"
+	  >
+	  <tr
+	    @click='resToggle(node.id)'
+	    >
+            <td style='text-align:left'>{{node.id}}</td>
+            <td style='text-align:left'>{{node.name_abbr}}</td>	  
+            <td style='text-align:left'>{{node.route}}</td>
+	  </tr>
+	  <template v-if="opts.active_result_node==node.id">
+	    <td style='text-align:left' colspan='3'>
+	      <textarea class='active_result_text' style='width:100%'
+			>{{node.data.b_data}}</textarea>
+	    </td>
+	  </template>
+	</template>
+      </template>
+    </tbody>
+  </table>    
+</div>
+
+<!-- textarea  class='result_text' v-for='(node, idx) in node_res' :key="idx" :id='idx'
 	     @keydown='OnKeydownFixSize($event)'
 	     >
     {{node}}
-  </textarea>
-  
-</div>    
+  </textarea -->
+
+<!-- table class="table">
+	<caption>基本的表格布局</caption>
+   <thead>
+      <tr>
+         <th>名称</th>
+         <th>城市</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <td>Tanmay</td>
+         <td>Bangalore</td>
+      </tr>
+      <tr>
+         <td>Sachin</td>
+         <td>Mumbai</td>
+      </tr>
+      <tr>
+	<td>
+	  <textarea>topic</textarea>
+	</td>	  
+      </tr>      
+      <tr>
+         <td>Sachin</td>
+         <td>Mumbai</td>
+      </tr>      
+   </tbody>
+</table -->
+
+
 </template>
 <script>
 // todo only surfix
@@ -95,9 +168,31 @@ import axios from 'axios';
 var $d = document;  
 var $g = function (id) { return $d.getElementById(id); };
 var $ge = function (id) { return $d.getElementById('e_'+id); };
+var $gc = function (id) { return $d.getElementsByClassName(id); };
+var $ah = function (target) {
+    target.style.height = "auto";
+    target.style.height = ((target.scrollHeight)+4) + "px";    
+}
+
+
 var $c = console.log;
 var $cr = function (tag) { return $d.createElement(tag); };
 var $w = global
+
+function goto(tag){
+    let bridge = tag;
+    let body = $d.body
+    let height = 0;
+    do {
+	height += bridge.offsetTop;
+	bridge = bridge.offsetParent;
+    } while(bridge !== body)
+
+    window.scrollTo({
+	top: height,
+	behavior: 'smooth'
+    })
+}
 
 var opts={
     height:800,
@@ -183,7 +278,8 @@ export default {
 		"height":opts.height,
 		"isalive":1,
 		"active_node":0,
-		
+		"active_input_node":0,
+		"active_result_node":0,				
 	    },
 	    node_res:{},
 	    res:{},
@@ -210,24 +306,45 @@ export default {
 	}
     },
     methods: {
+	resOn(id){
+	    this.opts.active_result_node=id	    	    
+	    this.$nextTick(() => {
+		var targets=$gc('active_result_text')
+		$c("targets:");		
+		$c(targets);
+		Array.from(targets).forEach((target => {
+		    $ah(target);
+		}))
+
+
+	    })	    
+	},
+	resOff(id){
+	    this.opts.active_result_node=0
+	},
+	resToggle(id){
+	    if (this.opts.active_result_node==id){
+		this.resOff(id)
+	    }else{
+		this.resOn(id)		
+	    }
+	},
 	FlaskSendTree(){
 	    var s=this.IOTreeInfo();
+	    this.opts.active_result_node=0;
 	    utils.post('flask/tree',s,(response => {
 		pxy.node_res=response.data['node_res'];
 		pxy.res=response.data['res'];
-		$c("GG");
 	    }))
+	    
 	},
 	FlaskLoadjson(){
             var file_input = document.getElementById('json_loader_filename');
             var files = file_input.files;
-	    $c(file_input)
-	    $c(files)	    
 	    if(files.length == 0){
 		return 0
 	    }else{
 		var file_data = files[0];
-		$c(file_data)	    		
 	    }
 	    var f=function(result,name) {
 		var d = JSON.parse(result);
@@ -255,8 +372,6 @@ export default {
 	IOLoad(){
             var file_input = document.getElementById('loader_filename');
             var files = file_input.files;
-	    $c(file_input)
-	    $c(files)	    
 	    if(files.length == 0){
 		return 0
 	    }else{
@@ -271,8 +386,6 @@ export default {
 		//pxy.WatchThis()
 	    }
 	    var text=utils.read(file_data,f)
-	    $c(text)
-	    $c('GG')	    
 	},
 	ActiveNodeIs(i){
 	    if (i==this.opts.active_node){
@@ -293,9 +406,11 @@ export default {
 	    $c(i);
 	    $g(i).focus()
 	    this.opts.active_node=i
+	    this.opts.active_input_node=0
 	},
-	ActiveOff(){
+	ActiveOff(i){
 	    this.opts.active_node=0
+	    this.opts.active_input_node=i
 	},
 	// 1.get
 	GetChildren(i){
@@ -557,8 +672,6 @@ export default {
 			var x2=o2.x6
 			var y2=o2.y0
 			this.SetLine(x1,y1,x2,y2,false);
-			$c("GG")
-			$c(i)
 		    }
 		    
 		}
@@ -576,8 +689,6 @@ export default {
 		    var x2=p.x9
 		    var y2=p.y0
 		    this.SetLine(x1,y1,x2,y2,true)
-		    
-		    $c("HH")
 		}
 		
 	    }
@@ -679,7 +790,6 @@ export default {
 		this.SetPositionX(i,0)
 		this.SetPositionY(i,0)		  
 	    }else if(i in this.front){
-		$c(i)
 		var p=this.Get(this.front[i]);
 		var x=p.x9+n.w1/2
 		var y=p.y0
@@ -687,11 +797,6 @@ export default {
 		this.SetPositionY(i,y)
 	    }else{
 		var p=this.Get(this.parent[i]);
-		$c('set position:')
-		$c(i)				
-		$c(this.parent[i])
-		$c(p)
-		$c(n)		
 		var x=p.x4+n.w1/2
 		var y=p.y3+n.h4+n.h3/2
 		this.SetPositionX(i,x)
@@ -714,7 +819,6 @@ export default {
 	    this.SetPosition('root');	
 	    this.SetCoordinate();
 	    this.SetCanvas();	      
-	    $c(this.info);  
 	},
 	
 	
@@ -722,34 +826,33 @@ export default {
 	OnFocus(event){
 	    var target=event.target;
 	    var id=target.id
-	    $c(id)	    
 	    target.style.height = "auto";
-	    target.style.height = (target.scrollHeight) + "px";
+	    target.style.height = ((target.scrollHeight)+4) + "px";
 	    
 	    //this.info[target.id].height=target.offsetHeight;
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
 	    this.SetThis();
-	    pxy.opts.active_node=id;	    
+	    pxy.opts.active_input_node=id;
+	    //pxy.opts.active_node=id;	    
 	},
 	OnBlur(event){
 	    var target=event.target;
 	    var id=target.id
 	    target.style.height = "auto";
-	    target.style.height = (target.scrollHeight) + "px";
+	    target.style.height = ((target.scrollHeight)+4) + "px";
 	    //this.info[target.id].height=target.offsetHeight;
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
 	    this.SetThis();
-	    pxy.opts.active_node=0;	    
+	    pxy.opts.active_node=0;
+	    pxy.opts.active_input_node=0;
 	},
 	OnClickExpander(event){
 	    var target=event.target;
 	    var eid=target.id
-	    $c('gg');
-	    $c(eid);
 	    var id=eid.substring(2)
 	    this.ToggleNode(id)
 	    
@@ -758,10 +861,10 @@ export default {
 	    var target=event.target;
 	    var id=target.id
 	    var k=event.keyCode
-	    $c('catch id:');	    
-	    $c(id);
-	    $c('catch key:');	    
-	    $c(k);
+	    // $c('catch id:');	    
+	    // $c(id);
+	    // $c('catch key:');	    
+	    // $c(k);
 	    
 	    if (k == 27){
 		$c('goto activate:');	    
@@ -783,40 +886,45 @@ export default {
 	    event.preventDefault();	    
 	    switch(k){
 	    case 32:
-		this.ActiveOff()
+		this.ActiveOff(id)
 		break;
-	    case 65:
+	    case 65: // A
 		var nodeid=this.AddNode(id);
 		//this.$nextTick(() => {this.ActiveOn(nodeid);})
 		break;
 		
-	    case 9:
+	    case 9: // tab
 		var nodeid=this.ToggleNode(id);
 		break;
-	    case 46:
+	    case 46: // DELETE
 		if (id!='root'){
 		    this.DropNode(id)
 		}else{
 		    throw new Error("you mustn't drop root node");
 		}
 		break;
-	    case 83:
+	    case 83: //S
 		var nodeid=this.AddSurNode(id);
 		break;
+	    case 71: //G
+		$c(id);
+		this.resOn(id);
+		$c(id);
+		this.$nextTick(() => {
+		    var target=$gc("active_result_text")[0]
+		    $c(target);
+		    goto(target);
+		})
 	    }
 
 	},
 	OnKeydownFixSize(event){
 	    var target=event.target;
 	    var id=target.id
-	    $c(id);
 	    target.style.height = "auto";
-	    target.style.height = (target.scrollHeight) + "px";
+	    target.style.height = ((target.scrollHeight)+4) + "px";
 	    this.SetThis()
 	},
-	
-	
-	
     }
 }
 </script>
@@ -841,18 +949,18 @@ export default {
 }
 
 #data_selector button{
-    margin-top: 1px;
-    margin-bottom: 1px;    
+    /* margin-top: 1px;
+    margin-bottom: 1px;    */
     width:30%;
 }
 #data_selector input{
-    margin-top: 1px;
-    margin-bottom: 1px;    
+    /* margin-top: 1px;
+    margin-bottom: 1px;    */
     width:60%;
     float:left; 
 }
 .input_file{
-    margin: 4px;
+    /* margin: 4px; */
     width:60%;
     float:left    
 }
