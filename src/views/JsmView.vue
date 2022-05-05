@@ -55,7 +55,7 @@
       <div id="code_editor" class="input">
       </div>
       <button style='width:100%;float:left' @click='FlaskSendCode()'>SendCode!</button>    
-      <textarea id="code_result">{{code_res}}
+      <textarea id="code_result" v-model='code_res'>
       </textarea>
     </div>
   </div>
@@ -96,7 +96,8 @@
 	    <template v-if="opts.active_result_node==node.id">
 	      <td style='text-align:left' colspan='3'>
 		<textarea class='active_result_text' style='width:100%'
-			  >{{node.data.b_data}}</textarea>
+			  v-model='node.data.b_data'
+			  ></textarea>
 	      </td>
 	    </template>
 	  </template>

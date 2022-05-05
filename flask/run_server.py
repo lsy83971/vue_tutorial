@@ -102,8 +102,12 @@ def code():
         _ = __block.body.pop() if __isexpr else None
         exec(compile(__block, '''tmp''', mode='exec'))
         output = eval(compile(ast.Expression(__last.value), '''tmp''', mode='eval')) if __isexpr else None
+        print("output:")
+        print(output.__repr__())
         return {"output": output.__repr__()}
     except Exception as f:
+        print("output:")
+        print(f.__repr__())
         return {"output": f.__repr__()}
     
 
