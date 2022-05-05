@@ -42,7 +42,7 @@ def beautify(x):
     elif isinstance(x, pd.Series):
         res["b_data"] = f"<pd.Series>:\n{x.reset_index().__repr__()}"
     else:
-        res["b_data"] = x
+        res["b_data"] = x.__repr__()
     return res
 
 def abbrStr(x):

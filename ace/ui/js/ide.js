@@ -7,9 +7,7 @@ window.onload = function() {
 }
 
 function changeLanguage() {
-
     let language = $("#languages").val();
-
     if(language == 'c' || language == 'cpp')editor.session.setMode("ace/mode/c_cpp");
     else if(language == 'php')editor.session.setMode("ace/mode/php");
     else if(language == 'python')editor.session.setMode("ace/mode/python");

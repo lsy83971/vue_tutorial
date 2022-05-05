@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import uuid
 import os
+from copy import deepcopy
 import ast
 from flask import Flask, session
 from flask import render_template_string, render_template
@@ -21,23 +22,37 @@ class treeUserManager:
     def __init__(self):
         self.treeInfos = dict()
 
-    def create_treeInfo(self):
+    def create_treeInfo(self, force=False):
         print("usename:")
         print(session.get("username"))
-        if session.get("username", None) is None:
+        if force is True:
             session["username"] = uuid.uuid4()
             self.treeInfos[session["username"]] = treeInfo()
+        else:
+            if session.get("username", None) is None:
+                session["username"] = uuid.uuid4()
+                self.treeInfos[session["username"]] = treeInfo()
 
     def getTreeInfo(self):
         self.create_treeInfo()
         return self.treeInfos[session["username"]]
 
+class treeGvar():
+    pass
+    
 class treeInfo:
+    def __init__(self):
+        self.cleartree()
+    
     def loaddata(self, data):
         self.data = data
 
     def loadtree(self, tree):
         self.tree = tree
+        
+    def cleartree(self):
+        self.tree = None
+        self.gvar = treeGvar()
         
     def gettree(self):
         return self.tree
@@ -46,29 +61,56 @@ class treeInfo:
         return self.data
 
 tm = treeUserManager()
+
+def clear():
+    ti = tm.getTreeInfo()    
+    ti.cleartree()
+    return "success!"
     
 def loaddata():
     data = json.loads(request.data)
     ti = tm.getTreeInfo()
     ti.loaddata(data)
-    print(data.keys())
     return "load json data success!"
 
 def code():
-    ti = tm.getTreeInfo()        
-    __code = json.loads(request.data)["code"]
-    __block = ast.parse(__code, '''tmp''', mode='exec')
-    __last = __block.body[-1]
-    __isexpr = isinstance(__last,ast.Expr)
-    _ = __block.body.pop() if __isexpr else None
-    exec(compile(__block, '''tmp''', mode='exec'))
-    output = eval(compile(ast.Expression(__last.value), '''tmp''', mode='eval')) if __isexpr else None
-    return {"output": output.__repr__()}
+    try:
+        try:
+            ti = tm.getTreeInfo()
+            toDataDict = {i:j.toData for i, j in ti.tree.nodes.items()}
+            fromDataDict = {i:j.fromData for i, j in ti.tree.nodes.items()}
+            if __context["node"] != 0:
+                tmp_node = __context["node"]
+                toData = toDataDict[tmp_node]
+                fromData = fromDataDict[tmp_node]
+                node = ti.tree.nodes[tmp_node]
+        except:
+            pass
+        __d = json.loads(request.data)
+        __code = __d["code"]
+        __context = __d["context"]
+        __code = __code.replace("$fd", "fromDataDict")
+        __code = __code.replace("$td", "toDataDict")
+        __code = __code.replace("$nd", "ti.tree.nodes")        
+        __code = __code.replace("$f", "fromData")
+        __code = __code.replace("$t", "toData")
+        __code = __code.replace("$n", "node")
+        __code = __code.replace("$g", "ti.gvar")                           
+        __block = ast.parse(__code, '''tmp''', mode='exec')
+        __last = __block.body[-1]
+        __isexpr = isinstance(__last,ast.Expr)
+        _ = __block.body.pop() if __isexpr else None
+        exec(compile(__block, '''tmp''', mode='exec'))
+        output = eval(compile(ast.Expression(__last.value), '''tmp''', mode='eval')) if __isexpr else None
+        return {"output": output.__repr__()}
+    except Exception as f:
+        return {"output": f.__repr__()}
     
 
 def tree():
     data = json.loads(request.data)
-    ti = tm.getTreeInfo()    
+    ti = tm.getTreeInfo()
+    ti.cleartree()
     ct = calcTree().from_treeinfo(data)
     ti.loadtree(ct)
     res = {"err": "",
@@ -79,8 +121,9 @@ def tree():
     
     ct.nodes["root"].receive(res)
     ##print([i for i in ct.nodes["root"]. iter()])
-    res = [i for i in ct.nodes["root"]. iter()]
-    node_res = {i:j.stack for i, j in ct.nodes.items()}
+    res = deepcopy([i for i in ct.nodes["root"]. iter()])
+    node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
+    
     for i in res:
         i["data"] = beautify(i["data"])
         i["name_abbr"] = abbrStr(i["name"])        
@@ -101,6 +144,7 @@ def tree():
 app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
 app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
 app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
+app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
 
 
 

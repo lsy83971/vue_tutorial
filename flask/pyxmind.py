@@ -65,7 +65,7 @@ class codeParser:
             
         code = code.replace("$f", "self.fromData")
         code = code.replace("$t", "self.toData")
-        code = code.replace("$r", "self.root.toData")
+        code = code.replace("$r", "self.root.fromData")
         code = code.replace("$i", "self.iterfunc")
         self.code = code
         if not hasattr(self, "name"):
@@ -78,6 +78,13 @@ class calcNode:
 
     def clear(self):
         self.stack = []
+
+    def find_route(self, r):
+        for i in self.stack:
+            print("ir:", i['route'])
+            print("r:", r)
+            if i["route"] == r:
+                return i
     
     def hasChild(self):
         return len(self.chd) != 0
@@ -94,8 +101,6 @@ class calcNode:
     def link(self, m):
         self.m = m
         self.root = self.m.getNode("root")
-
-
         
     def from_nodeinfo(self, info):
         self.rawcode = info["code"]
@@ -170,6 +175,7 @@ class calcNode:
 
             
         self.stack.append(self.result())
+        
         if self.isLeaf():
             yield self.result()
             return

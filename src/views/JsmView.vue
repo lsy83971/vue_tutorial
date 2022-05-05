@@ -1,7 +1,7 @@
 <template>
   <div style="width:1650px;">
     <div id="left_panel">  
-      <div id='data_selector' style='margin:3px;'>
+      <div id='data_selector' style='margin:3px;'>	
 	<div>
 	  <input id='saver_filename' />
 	  <button @click='IOSave()'>saveJSM</button>
@@ -16,7 +16,14 @@
 	  <button @click='FlaskLoadjson()'>loadJson</button>
 	</div>      
       </div>
-      
+      <div id='data_engine_info' style='margin:3px;'>
+	<div>
+	  context:{{context.node}}
+	</div>
+	<div>
+	  copyNode:{{cpnode}}
+	</div>
+      </div>      
       <div id='jsm_outer'
 	   style='height:800px;width:1000px;
       		  border-style:solid;
@@ -44,22 +51,24 @@
       </div>
     </div>
     <div id="code">
+      
       <div id="code_editor" class="input">
       </div>
       <button style='width:100%;float:left' @click='FlaskSendCode()'>SendCode!</button>    
-      <div id="code_result">{{code_res}}
-      </div>
+      <textarea id="code_result">{{code_res}}
+      </textarea>
     </div>
   </div>
   <div id='tree_result' style='margin:3px;'>
     <div style="width:240px;margin:3px;">
+      <!-- button style='width:50%;float:left' @click='FlaskSendTree()'>RunDebug!</button -->
       <button style='width:50%;float:left' @click='FlaskSendTree()'>Run!</button>
-
+      <button style='width:50%;float:left' @click='FlaskClearTree()'>clear!</button>      
     </div>
     <table class="table">
       <colgroup>
-	<col width="60px" />
-	<col width="60px" />
+	<col width="30px" />
+	<col width="30px" />
 	<col width="200px" />
       </colgroup>    
       <thead>
@@ -93,7 +102,35 @@
 	  </template>
 	</template>
       </tbody>
-    </table>   
+    </table>
+
+    <table class="table">
+      <colgroup>
+	<col width="30px" />
+	<col width="30px" />
+	<col width="60px" />
+	<col width="140px" />	
+      </colgroup>    
+      <thead>
+	<tr>
+          <th>id</th>
+          <th>name</th>
+          <th>route</th>
+          <th>result</th>		  
+	</tr>
+      </thead>
+      <tbody>
+	<template v-for='(node, idx) in res' :key="idx">
+	  <tr>
+            <td style='text-align:left'>{{node.id}}</td>
+            <td style='text-align:left'>{{node.name_abbr}}</td>	  
+            <td style='text-align:left'>{{node.route}}</td>
+            <td style='text-align:left'>{{node.data.b_data}}</td>	    
+	  </tr>
+	</template>
+      </tbody>
+    </table>
+    
   </div>
 </template>  
 
@@ -116,7 +153,7 @@
   //      | |       |   |     | |       | | 	  	  
   //      | |       |   |     | --------- | 	  	  
   //      | ---------   |     |           | 	  	  
-  //      |             -------          	|  
+  //      |             -------           |  
   //      ---------------------------------
   //      
   //      Î»ÖÃ:
@@ -260,7 +297,9 @@
 	      },
 	      node_res:{},
 	      res:{},
-	      code_res:""
+	      code_res:"",
+	      cpnode:0,
+	      context:{"node":0},
 	  }
       },
       
@@ -284,6 +323,9 @@
 	  }
       },
       methods: {
+	  
+
+	  
 	  resOn(id){
 	      this.opts.active_result_node=id	    	    
 	      this.$nextTick(() => {
@@ -317,12 +359,21 @@
 	      
 	  },
 	  FlaskSendCode(){
-	      var s={'code':editor.getSession().getValue()}
+	      var s={'code':editor.getSession().getValue(),
+		     'context':this.context,
+		    }
 	      utils.post('flask/code',s,(response => {
 		  pxy.code_res=response.data['output'];		
 	      }))
 	      
 	  },
+	  FlaskClearTree(){
+	      var s={}
+	      utils.post('flask/clear',s,(response => {
+		  $c("clear!")
+	      }))
+	  },
+	  
 	  FlaskLoadjson(){
               var file_input = document.getElementById('json_loader_filename');
               var files = file_input.files;
@@ -338,6 +389,7 @@
 	      }
 	      var text=utils.read(file_data,f)
 	  },
+	  
 	  IOTreeInfo(){
 	      return {'info':this.info,
 		      'struct':this.struct,
@@ -423,7 +475,31 @@
 	      }
 	      return des	    
 	  },
-	  
+
+	  GetDescendantSurTree(i){
+	      var ns=this.GetDescendantSur(i)
+	      ns=[i].concat(ns)
+	      $c(ns)
+	      var info=new Object();
+	      var struct=new Object();
+	      var namemap=new Object();
+	      for (let i in ns){
+		  namemap[ns[i]]=this.GetNewnodeName();
+		  var tmp_info=structuredClone(this.info[ns[i]])
+		  var tmp_struct=structuredClone(this.struct[ns[i]])
+		  info[namemap[ns[i]]]=tmp_info
+		  struct[namemap[ns[i]]]=tmp_struct
+	      }
+	      for (let i in info){
+		  if (info[i]["sur"] != 0){
+		      info[i]["sur"]=namemap[info[i]["sur"]]
+		  }
+		  var tmp_struct=struct[i].map(function(x){return namemap[x]})
+		  struct[i]=tmp_struct
+	      }
+	      return {"info":info,"struct":struct,"namemap":namemap,"root":i}
+	  },
+
 	  Get(i){
 	      return this.info[i]
 	  },
@@ -499,8 +575,10 @@
 	      this.isshowchildren=s;	    
 	  },
 	  
-	  AddNode(i){
-	      var name=this.GetNewnodeName();
+	  AddNode(i,name=null){
+	      if (!name){
+		  name=this.GetNewnodeName();
+	      }
 	      this.ShowNode(i)
 	      this.struct[i].push(name);
 	      this.struct[name]=[];
@@ -568,6 +646,22 @@
 	      this.Get(i).show=1-this.Get(i).show
 	      this.WatchThis();
 	      this.SetThis();
+	  },
+	  copyNode(f){
+	      this.cpnode=f
+	  },
+	  pasteNode(t){
+	      this.copyPasteNode(this.cpnode,t)
+	  },
+	  copyPasteNode(f,t){
+	      var cpinfo=this.GetDescendantSurTree(f)
+	      Object.assign(this.struct,cpinfo["struct"])
+	      Object.assign(this.info,cpinfo["info"])
+	      this.struct[t].push(cpinfo["namemap"][f]);
+	      this.WatchThis();
+	  },
+	  contextNode(n){
+	      this.context={"node":n}
 	  },
 	  
 	  // 4.set
@@ -888,9 +982,26 @@
 		      throw new Error("you mustn't drop root node");
 		  }
 		  break;
+	      case 68: // D
+		  if (id!='root'){
+		      this.DropNode(id)
+		  }else{
+		      throw new Error("you mustn't drop root node");
+		  }
+		  break;
+	      case 67: // C copy
+		  this.copyNode(id)
+		  break;
+	      case 80: // P paste
+		  this.pasteNode(id)
+		  break;
 	      case 83: //S
 		  var nodeid=this.AddSurNode(id);
 		  break;
+	      case 84: //T
+		  this.contextNode(id);
+		  break;
+		  
 	      case 71: //G
 		  $c(id);
 		  this.resOn(id);
@@ -900,6 +1011,7 @@
 		      $c(target);
 		      goto(target);
 		  })
+		  break;
 	      }
 
 	  },
@@ -926,8 +1038,9 @@
   }
   #data_selector{
       margin: 5px;
-      width: 40%;
+      width: 60%;
   }
+  
   #data_selector div{
       margin: 5px;
       width: 300px;
@@ -944,6 +1057,11 @@
       width:60%;
       float:left; 
   }
+  #data_engine_info div{
+      text-align:left;
+  }
+
+  
   .input_file{
       /* margin: 4px; */
       width:60%;
@@ -952,7 +1070,7 @@
   #left_panel{
       /* margin: 4px; */
       width:1050px;
-    height:900px;    
+    height:950px;    
     float:left    
 }
 #code{
@@ -976,9 +1094,9 @@
     /* float:left; */
     text-align:left;
     width:500px;
-    height:395px;
+    height:465px;
     border-style:solid;        
-    margin-top:48px
+    margin-top:0px
 }
 
 
