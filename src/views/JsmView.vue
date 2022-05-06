@@ -1,6 +1,7 @@
 <template>
   <div style="width:1650px;">
-    <div id="left_panel">  
+    <div id="left_panel">
+      <div style="overflow:auto">
       <div id='data_selector' style='margin:3px;'>	
 	<div>
 	  <input id='saver_filename' />
@@ -17,13 +18,14 @@
 	</div>      
       </div>
       <div id='data_engine_info' style='margin:3px;'>
-	<div>
+	<div style='text-align:right'>
 	  context:{{context.node}}
 	</div>
-	<div>
+	<div style='text-align:right'>
 	  copyNode:{{cpnode}}
 	</div>
-      </div>      
+      </div>
+      </div>
       <div id='jsm_outer'
 	   style='height:800px;width:1000px;
       		  border-style:solid;
@@ -43,6 +45,17 @@
       		      'onalive': ActiveNodeIs(idx),
   			}">
 	    </textarea>
+
+	    <!-- textarea
+      	      style='z-index:auto;text-overflow:ellipsis;outline:none'
+      	      @focus='OnFocus($event)'
+      	      @blur='OnBlur($event)'
+      	      @keydown='OnKeydown($event)'
+      	      :id='idx'
+      	      :class="{'readonly': ActiveNodeIs(idx),
+      		      'onalive': ActiveNodeIs(idx),
+  			}">{{node.v}}
+	    </textarea -->	    
 	    <span class='dot'
 		  @click='OnClickExpander($event)'        
 		  :id="'e_'+idx"></span>
@@ -51,7 +64,6 @@
       </div>
     </div>
     <div id="code">
-      
       <div id="code_editor" class="input">
       </div>
       <button style='width:100%;float:left' @click='FlaskSendCode()'>SendCode!</button>    
@@ -227,8 +239,14 @@
   var utils= {
       read: function (file_data,f) {
           var reader = new FileReader();
+	  var fd=function(res,name){
+	      try{return f(res,name)}
+	      catch(err){
+		  alert("READERR:"+err.message)
+	      }
+	  }
 	  reader.onload = function() {
-	      f(this.result,file_data.name)
+	      fd(this.result,file_data.name)
 	  };
           reader.readAsText(file_data);	
       },
@@ -269,11 +287,31 @@
 	      .post(url,data)
 	      .then(f)
 	      .catch(function (error){
-		  $(error)
+		  alert("AXIOSERR:"+error.message)
 	      })
       }
   }
 
+
+  function swapArray(arr, index1, index2) {
+      var a1=structuredClone(arr[index1])
+      var a2=structuredClone(arr[index2])      
+      arr[index2]=a1
+      arr[index1]=a2
+      return arr;
+  }
+  function zIndexUp(arr,index){
+      if(index!= 0){
+	  swapArray(arr, index, index-1);
+      }
+  }
+  function zIndexDown(arr,index){
+      var length = arr.length
+      $c(length)
+      if((index+1) != length){
+	  swapArray(arr, index, index+1);
+      }
+  }
   export default {
       data () {
 	  return {
@@ -299,8 +337,8 @@
 	      node_res:{},
 	      res:{},
 	      code_res:"",
-	      cpnode:0,
-	      context:{"node":0},
+	      cpnode:"None",
+	      context:{"node":"None"},
 	  }
       },
       
@@ -324,9 +362,6 @@
 	  }
       },
       methods: {
-	  
-
-	  
 	  resOn(id){
 	      this.opts.active_result_node=id	    	    
 	      this.$nextTick(() => {
@@ -351,18 +386,24 @@
 	      }
 	  },
 	  FlaskSendTree(){
-	      var s=this.IOTreeInfo();
-	      this.opts.active_result_node=0;
-	      utils.post('flask/tree',s,(response => {
-		  pxy.node_res=response.data['node_res'];
-		  pxy.res=response.data['res'];
-	      }))
+	      try{
+		  var s=this.IOTreeInfo();
+		  this.opts.active_result_node=0;
+		  utils.post('flask/tree',s,(response => {
+		      pxy.node_res=response.data['node_res'];
+		      pxy.res=response.data['res'];
+		      alert("load tree success")
+		  }))
+	      }catch(err){
+		  alert("sendTreeErr:"+err.message)
+	      }
 	      
 	  },
 	  FlaskSendCode(){
 	      var s={'code':editor.getSession().getValue(),
 		     'context':this.context,
 		    }
+	      pxy.code_res="waiting!"
 	      utils.post('flask/code',s,(response => {
 		  pxy.code_res=response.data['output'];		
 	      }))
@@ -371,24 +412,31 @@
 	  FlaskClearTree(){
 	      var s={}
 	      utils.post('flask/clear',s,(response => {
-		  $c("clear!")
+		  alert("clear!")
 	      }))
 	  },
 	  
 	  FlaskLoadjson(){
-              var file_input = document.getElementById('json_loader_filename');
-              var files = file_input.files;
-	      if(files.length == 0){
-		  return 0
-	      }else{
-		  var file_data = files[0];
+	      try{
+		  var file_input = document.getElementById('json_loader_filename');
+		  var files = file_input.files;
+		  if(files.length == 0){
+		      return 0
+		  }else{
+		      var file_data = files[0];
+		  }
+		  var f=function(result,name) {
+		      var d = JSON.parse(result);
+		      utils.post("flask/loaddata",d,
+				 (response => {
+				     alert(response.data);
+				 }))
+		      //pxy.WatchThis()
+		  }
+		  var text=utils.read(file_data,f)
+	      }catch(err){
+		  alert("FLASKLOADJSONERR:"+err.message)
 	      }
-	      var f=function(result,name) {
-		  var d = JSON.parse(result);
-		  utils.post("flask/loaddata",d,(response => ($c(response.data))))
-		  //pxy.WatchThis()
-	      }
-	      var text=utils.read(file_data,f)
 	  },
 	  
 	  IOTreeInfo(){
@@ -650,6 +698,30 @@
 	  },
 	  copyNode(f){
 	      this.cpnode=f
+	  },
+	  upNode(f){
+	      $c(f)
+	      var p=this.parent[f]
+	      $c(p)
+	      var pl=this.struct[p]
+	      var index=pl.indexOf(f)
+	      $c(pl)
+	      zIndexUp(pl,index)
+	      this.WatchThis();
+	      this.SetThis();
+	      
+	  },
+	  downNode(f){
+	      $c(f)	      
+	      var p=this.parent[f]
+	      $c(p)	      
+	      var pl=this.struct[p]
+	      var index=pl.indexOf(f)
+	      $c(pl)
+	      $c(index)	      
+	      zIndexDown(pl,index)
+	      this.WatchThis();
+	      this.SetThis();
 	  },
 	  pasteNode(t){
 	      this.copyPasteNode(this.cpnode,t)
@@ -1002,6 +1074,18 @@
 	      case 84: //T
 		  this.contextNode(id);
 		  break;
+
+	      case 38: //T
+		  if (event.ctrlKey){
+		      this.upNode(id);		      
+		  }
+		  break;
+	      case 40: //T
+		  if (event.ctrlKey){
+		      this.downNode(id);		      
+		  }
+		  break;
+		  
 		  
 	      case 71: //G
 		  $c(id);
@@ -1038,6 +1122,7 @@
       border-width: 3px;    
   }
   #data_selector{
+      float: left;
       margin: 5px;
       width: 60%;
   }
@@ -1070,10 +1155,11 @@
   }
   #left_panel{
       /* margin: 4px; */
-      width:1050px;
-    height:950px;    
-    float:left    
-}
+    /*  width:1050px;
+    height:950px;    */
+      overflow:auto;
+      float:left;
+  }
 #code{
     float:left;
     width:500px;
@@ -1095,7 +1181,7 @@
     /* float:left; */
     text-align:left;
     width:500px;
-    height:465px;
+    height:432px;
     border-style:solid;        
     margin-top:0px
 }

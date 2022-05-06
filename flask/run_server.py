@@ -1,9 +1,7 @@
-# 任务是建立单机版的调试器
-# simple way
-# 一切从简单 但是预留扩展空间
 import sys
+import traceback
 sys.path.append("/home/lsy/pyxmind")
-from pyxmind import calcTree
+from pyxmind import calcTree, result_parse
 from pdform import pd2json, pd2str, beautify, abbrStr
 import pandas as pd
 import numpy as np
@@ -17,6 +15,10 @@ from flask import request
 import json
 app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")
 app.config['SECRET_KEY'] = os.urandom(24)
+
+# 任务是建立单机版的调试器
+# simple way
+# 一切从简单 但是预留扩展空间
 
 class treeUserManager:
     def __init__(self):
@@ -37,8 +39,6 @@ class treeUserManager:
         self.create_treeInfo()
         return self.treeInfos[session["username"]]
 
-class treeGvar():
-    pass
     
 class treeInfo:
     def __init__(self):
@@ -52,7 +52,6 @@ class treeInfo:
         
     def cleartree(self):
         self.tree = None
-        self.gvar = treeGvar()
         
     def gettree(self):
         return self.tree
@@ -63,17 +62,26 @@ class treeInfo:
 tm = treeUserManager()
 
 def clear():
-    ti = tm.getTreeInfo()    
-    ti.cleartree()
-    return "success!"
+    try:
+        ti = tm.getTreeInfo()    
+        ti.cleartree()
+        return "success!"
+    except:
+        return "failed!"
     
 def loaddata():
-    data = json.loads(request.data)
-    ti = tm.getTreeInfo()
-    ti.loaddata(data)
-    return "load json data success!"
+    try:
+        data = json.loads(request.data)
+        ti = tm.getTreeInfo()
+        ti.loaddata(data)
+        return "load json success!"        
+    except Exception as e:
+        return "load json failed!"        
 
 def code():
+    __d = json.loads(request.data)
+    __code = __d["code"]
+    __context = __d["context"]
     try:
         try:
             ti = tm.getTreeInfo()
@@ -84,32 +92,28 @@ def code():
                 toData = toDataDict[tmp_node]
                 fromData = fromDataDict[tmp_node]
                 node = ti.tree.nodes[tmp_node]
-        except:
-            pass
-        __d = json.loads(request.data)
-        __code = __d["code"]
-        __context = __d["context"]
+        except Exception as e:
+            print(e)
         __code = __code.replace("$fd", "fromDataDict")
         __code = __code.replace("$td", "toDataDict")
         __code = __code.replace("$nd", "ti.tree.nodes")        
         __code = __code.replace("$f", "fromData")
         __code = __code.replace("$t", "toData")
         __code = __code.replace("$n", "node")
-        __code = __code.replace("$g", "ti.gvar")                           
+        __code = __code.replace("$g", "ti.tree.attr")                      
         __block = ast.parse(__code, '''tmp''', mode='exec')
         __last = __block.body[-1]
         __isexpr = isinstance(__last,ast.Expr)
         _ = __block.body.pop() if __isexpr else None
         exec(compile(__block, '''tmp''', mode='exec'))
-        output = eval(compile(ast.Expression(__last.value), '''tmp''', mode='eval')) if __isexpr else None
-        print("output:")
-        print(output.__repr__())
-        return {"output": output.__repr__()}
-    except Exception as f:
-        print("output:")
-        print(f.__repr__())
-        return {"output": f.__repr__()}
-    
+        output = eval(compile(ast.Expression(__last.value),
+                              '''tmp''', mode='eval')) if __isexpr else None
+        if not isinstance(output, str):
+            output = output.__repr__()
+        return {"output": output}
+    except Exception as e:
+        output = "Error:\n" + traceback.format_exc()
+        return {"output": output}
 
 def tree():
     data = json.loads(request.data)
@@ -127,14 +131,18 @@ def tree():
     ##print([i for i in ct.nodes["root"]. iter()])
     res = deepcopy([i for i in ct.nodes["root"]. iter()])
     node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
-    
+
     for i in res:
+        result_parse.verr(i)
         i["data"] = beautify(i["data"])
-        i["name_abbr"] = abbrStr(i["name"])        
+        i["name_abbr"] = abbrStr(i["name"])
+        
     for j in node_res.values():
         for i in j:
+            result_parse.verr(i)            
             i["data"] = beautify(i["data"])
-            i["name_abbr"] = abbrStr(i["name"])                    
+            i["name_abbr"] = abbrStr(i["name"])
+            
     tr = {"res": res, "node_res": node_res}
     ##tr_str = pd2str(tr)
 
@@ -149,8 +157,6 @@ app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"
 app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
 app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
 app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
-
-
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5005, debug=True)

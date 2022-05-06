@@ -41,6 +41,8 @@ def beautify(x):
         res["b_data"] = f"<pd.DataFrame>:\n{x.__repr__()}"
     elif isinstance(x, pd.Series):
         res["b_data"] = f"<pd.Series>:\n{x.reset_index().__repr__()}"
+    elif isinstance(x, str):
+        res["b_data"] = x
     else:
         res["b_data"] = x.__repr__()
     return res

@@ -50,7 +50,8 @@ class codeParser:
             raise Exception('node info empty')
         self.headline = self.lines[0]
         self.parseHead()
-        if self.h0 in ['null', 'off']:
+
+        if self.h0 in ['off']:
             self.code = ""
             
         self.restline = '\n'. join([" ". join(self.headers[1:])] + self.lines[1:])
@@ -67,6 +68,7 @@ class codeParser:
         code = code.replace("$t", "self.toData")
         code = code.replace("$r", "self.root.fromData")
         code = code.replace("$i", "self.iterfunc")
+        code = code.replace("$g", "self.attr")
         self.code = code
         if not hasattr(self, "name"):
             self.name = self.code
@@ -101,6 +103,7 @@ class calcNode:
     def link(self, m):
         self.m = m
         self.root = self.m.getNode("root")
+        self.attr = m.attr
         
     def from_nodeinfo(self, info):
         self.rawcode = info["code"]
@@ -121,76 +124,148 @@ class calcNode:
                 })
     
     def receive(self, res):
+        """
+        step1
+        fromData
+        fromErr
+        fromEroute
+        route
+        """
         self.fromData = res["data"]
         self.fromErr = res["err"]
         self.fromEroute = res["eroute"]        
-        self.route = res["route"] + [self.id]
+        self.rawroute = res["route"] + [self.id]
+
 
     def receiveErr(self):
         return not(self.fromErr == "")
 
-    def calc(self):
-        code = self.ci.code
-        try:
-            exec(code)
-            self.err = ""
-            self.eroute = ""
-        except:
-            self.err="Error:\n" + traceback.format_exc()
-            self.eroute = self.route
-            self.toData = "Error!"
-
-
+    ## def calc(self):
+    ##     code = self.ci.code
+    ##     try:
+    ##         exec(code)
+    ##         self.err = ""
+    ##         self.eroute = ""
+    ##     except:
+    ##         self.err="Error:\n" + traceback.format_exc()
+    ##         self.eroute = self.route
+    ##         self.toData = "Error!"
 
     def iterSur(self, res):
         sur = self.m.getNode(self.sur)
         sur.receive(res)
         yield from sur.iter()
 
+    def exec(self):
+        """
+        step3
+        """
+        tp = self.ci.h0
+        code = self.ci.code
+        if self.receiveErr():
+            self.toData = "Receive Error!"
+            self.err = self.fromErr
+            self.eroute = self.fromEroute
+            self.route = self.rawroute
+        else:
+            try:
+                exec(code)
+                if tp not in ["iter", "null"]:
+                    assert hasattr(self, "toData")
+                if tp == "null":
+                    self.toData = "null iter"
+                self.err = ""
+                self.eroute = ""
+                self.route = self.rawroute
+            except:
+                self.err="Error:\n" + traceback.format_exc()
+                self.eroute = self.rawroute
+                self.route = self.rawroute
+                self.toData = "Error!"
+                return
+
+    def iterSelf(self):
+        """
+        step4
+        """
+        tp = self.ci.h0
+        code = self.ci.code
+        self.exec()
+        if tp == "null":
+            self.stack.append(deepcopy(self.result()))
+            return
+        
+        if tp != "iter":
+            yield self.result()
+            self.stack.append(deepcopy(self.result()))
+        else:
+            try:
+                for i in self.iterfunc(self):
+                    self.toData = i["toData"]
+                    self.route = deepcopy(self.rawroute)
+                    self.route[ - 1] = self.route[ - 1] + "##key:" + i["key"]
+                    yield self.result()
+                    self.stack.append(deepcopy(self.result()))
+            except:
+                self.toData = "iterError!"
+                self.err="Error:\n" + traceback.format_exc()
+                self.route = deepcopy(self.rawroute)
+                self.eroute = self.route
+                yield self.result()
+                self.stack.append(deepcopy(self.result()))
+
     def iterChd(self):
         tp = self.ci.h0
-        tp1 = self.ci.h1        
-        for i in self.chd:
-            n = self.m.getNode(i)
-            n.receive(self.result())
-            yield from n.iter()
+        tp1 = self.ci.h1
+        for j in self.iterSelf():
+            for i in self.chd:
+                n = self.m.getNode(i)
+                n.receive(j)
+                yield from n.iter()
         
     def iter(self):
+        """
+        step2
+        """
         tp = self.ci.h0
         tp1 = self.ci.h1
         if tp == "off":
             return
             ##raise Exception("node off")
-        
-        
-        if tp == "null":
-            return
-
-        if self.receiveErr():
-            self.toData = "Receive Error!"
-            self.err = self.fromErr
-            self.eroute = self.fromEroute
-        else:
-            self.calc()
-
-            
-        self.stack.append(self.result())
-        
         if self.isLeaf():
-            yield self.result()
+            yield from self.iterSelf()
             return
         
         if self.needYieldId():
-            yield self.result()
+            yield from self.iterSelf()
 
         for tmp_res in self.iterChd():
             if self.hasSur():
                 yield from self.iterSur(tmp_res)
             else:
                 yield tmp_res
-                
 
+
+class result_parse:
+    @staticmethod
+    def verr(x):
+        if x["err"] != "":
+            x["data"] = x["err"]
+        return x
+
+                
+class attr(dict):
+    def __getattribute__(self, name):
+        return super().__getattribute__(name)
+    def __setattr__(self, name, value):
+        self[name] = value
+        super().__setattr__(name, value)
+            
 class calcTree:
+    def __init__(self):
+        super().__init__()
+        self.attr = attr()
+
     def from_treeinfo(self, tree):
         self.info = tree['info']
         self.struct = tree['struct']
