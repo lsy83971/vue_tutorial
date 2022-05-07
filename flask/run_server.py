@@ -49,6 +49,9 @@ class treeInfo:
 
     def loadtree(self, tree):
         self.tree = tree
+
+    def loadtreedata(self, data):
+        self.treedata = data
         
     def cleartree(self):
         self.tree = None
@@ -120,6 +123,7 @@ def tree():
     ti = tm.getTreeInfo()
     ti.cleartree()
     ct = calcTree().from_treeinfo(data)
+    ti.loadtreedata(data)
     ti.loadtree(ct)
     res = {"err": "",
            "eroute": "",
@@ -145,18 +149,25 @@ def tree():
             
     tr = {"res": res, "node_res": node_res}
     ##tr_str = pd2str(tr)
-
     #print("tree info:")
     #exec("""print(ti.tree.nodes)""")
     #print(ti.tree.nodes['root']. stack)
     
     return json.dumps(tr)
 
+def revert():
+    ti = tm.getTreeInfo()
+    data = ti.treedata
+    return json.dumps(ti.treedata)
+
+
 ## app.add_url_rule("/", "init", init, methods=["GET", "POST"])
 app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
 app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
 app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
 app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
+
+app.add_url_rule("/flask/revert", "revert", revert, methods=["GET", "POST"])
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5005, debug=True)

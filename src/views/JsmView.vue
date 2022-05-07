@@ -18,12 +18,16 @@
 	</div>      
       </div>
       <div id='data_engine_info' style='margin:3px;'>
-	<div style='text-align:right'>
+	<div>
 	  context:{{context.node}}
 	</div>
-	<div style='text-align:right'>
+	<div>
 	  copyNode:{{cpnode}}
 	</div>
+	<div>
+	  focusNode:{{anode()}}
+	</div>
+	
       </div>
       </div>
       <div id='jsm_outer'
@@ -72,22 +76,27 @@
     </div>
   </div>
   <div id='tree_result' style='margin:3px;'>
-    <div style="width:240px;margin:3px;">
+    <div style="width:800px;margin:3px;">
       <!-- button style='width:50%;float:left' @click='FlaskSendTree()'>RunDebug!</button -->
-      <button style='width:50%;float:left' @click='FlaskSendTree()'>Run!</button>
-      <button style='width:50%;float:left' @click='FlaskClearTree()'>clear!</button>      
+      <button style='width:15%;float:left' @click='FlaskSendTree()'>Run!</button>
+
+
+      <button style='width:15%;float:left' @click='FlaskClearTree()'>clear!</button>
+      <button style='width:15%;float:left' @click='RevertTree()'>revert!</button>
     </div>
     <table class="table">
       <colgroup>
 	<col width="30px" />
 	<col width="30px" />
-	<col width="200px" />
+	<col width="60px" />
+	<col width="140px" />	
       </colgroup>    
       <thead>
 	<tr>
           <th>id</th>
           <th>name</th>
-          <th>route</th>	
+          <th>route</th>
+          <th>result</th>		  
 	</tr>
       </thead>
       <tbody>
@@ -98,20 +107,14 @@
 	    v-for='(node, idx) in nodes'
 	    :key="idx" :node_res_id="node.id"
 	    >
-	    <tr
-	      @click='resToggle(node.id)'
-	      >
-              <td style='text-align:left'>{{node.id}}</td>
+	    <tr :class="nra_cls(node)">
+              <td style='text-align:left'
+		  @click='ActiveOn(node.id)'
+		  >{{node.id}}</td>
               <td style='text-align:left'>{{node.name_abbr}}</td>	  
               <td style='text-align:left'>{{node.route}}</td>
+              <td style='text-align:left'>{{node.data.b_data}}</td>	    	      
 	    </tr>
-	    <template v-if="opts.active_result_node==node.id">
-	      <td style='text-align:left' colspan='3'>
-		<textarea class='active_result_text' style='width:100%'
-			  v-model='node.data.b_data'
-			  ></textarea>
-	      </td>
-	    </template>
 	  </template>
 	</template>
       </tbody>
@@ -134,8 +137,10 @@
       </thead>
       <tbody>
 	<template v-for='(node, idx) in res' :key="idx">
-	  <tr>
-            <td style='text-align:left'>{{node.id}}</td>
+	  <tr :class="ra_cls(node)">	  
+            <td style='text-align:left'
+		@click='ActiveOn(node.id)'		
+		>{{node.id}}</td>
             <td style='text-align:left'>{{node.name_abbr}}</td>	  
             <td style='text-align:left'>{{node.route}}</td>
             <td style='text-align:left'>{{node.data.b_data}}</td>	    
@@ -198,10 +203,8 @@
   var $gc = function (id) { return $d.getElementsByClassName(id); };
   var $ah = function (target) {
       target.style.height = "auto";
-      target.style.height = ((target.scrollHeight)+4) + "px";    
+      target.style.height = (target.scrollHeight+5) + "px";    
   }
-
-
   var $c = console.log;
   var $cr = function (tag) { return $d.createElement(tag); };
   var $w = global
@@ -332,7 +335,7 @@
 		  "isalive":1,
 		  "active_node":0,
 		  "active_input_node":0,
-		  "active_result_node":0,				
+		  "active_result_node":0,
 	      },
 	      node_res:{},
 	      res:{},
@@ -341,7 +344,8 @@
 	      context:{"node":"None"},
 	  }
       },
-      
+      computed: {
+      },
       watch: {
 	  // struct(){
 	  //     this.GetParent()
@@ -362,29 +366,39 @@
 	  }
       },
       methods: {
-	  resOn(id){
-	      this.opts.active_result_node=id	    	    
-	      this.$nextTick(() => {
-		  var targets=$gc('active_result_text')
-		  $c("targets:");		
-		  $c(targets);
-		  Array.from(targets).forEach((target => {
-		      $ah(target);
-		  }))
-
-
-	      })	    
-	  },
-	  resOff(id){
-	      this.opts.active_result_node=0
-	  },
-	  resToggle(id){
-	      if (this.opts.active_result_node==id){
-		  this.resOff(id)
+	  anode(){
+	      if (this.opts.active_node==0){
+		  return this.opts.active_input_node
 	      }else{
-		  this.resOn(id)		
+		  return this.opts.active_node
 	      }
 	  },
+	  nra_cls(node){
+	      var d=new Object()
+	      d["active_res"]=(node.id==pxy.opts.active_result_node)
+	      d["res_node_"+node.id]=true
+	      return d
+	  },
+	  ra_cls(node){
+	      var d=new Object()
+	      d["active_res"]=(node.id==pxy.opts.active_result_node)
+	      d["res_"+node.id]=true
+	      return d
+	  },
+	  
+	  resOn(id){
+	      this.opts.active_result_node=id	    	    
+	  },
+//	  resOff(id){
+//	      this.opts.active_result_node=0
+//	  },
+//	  resToggle(id){
+//	      if (this.opts.active_result_node==id){
+//		  this.resOff(id)
+//	      }else{
+//		  this.resOn(id)		
+//	      }
+//	  },
 	  FlaskSendTree(){
 	      try{
 		  var s=this.IOTreeInfo();
@@ -443,6 +457,18 @@
 	      return {'info':this.info,
 		      'struct':this.struct,
 		      'opts':this.opts}
+	  },
+	  RevertTree(){
+	      utils.post("flask/revert",{},
+			 (response => {
+			     var d=response.data;
+			     this.info=d.info;
+			     this.struct=d.struct;
+			     this.opts=d.opts;
+			     //this.WatchThis();
+			     //this.SetThis();
+			 }))
+	      //pxy.WatchThis()
 	  },
 	  IOToJson(){
 	      return JSON.stringify(
@@ -774,6 +800,7 @@
 	  },
 	  
 	  SetSize(i){
+	      $ah($g(i));
 	      this.info[i].w1=$g(i).offsetWidth;
 	      this.info[i].h1=$g(i).offsetHeight;
 	  },
@@ -978,9 +1005,11 @@
 	  OnFocus(event){
 	      var target=event.target;
 	      var id=target.id
-	      target.style.height = "auto";
-	      target.style.height = ((target.scrollHeight)+4) + "px";
-	      
+	      //target.style.height = "auto";
+	      //target.style.height = ((target.scrollHeight)+4) + "px";
+	      $ah(target);
+
+
 	      //this.info[target.id].height=target.offsetHeight;
 	      //this.info[target.id].width=target.offsetWidth;	
 	      //$c(this.info);
@@ -992,8 +1021,9 @@
 	  OnBlur(event){
 	      var target=event.target;
 	      var id=target.id
-	      target.style.height = "auto";
-	      target.style.height = ((target.scrollHeight)+4) + "px";
+	      $ah(target);	      
+	      //target.style.height = "auto";
+	      //target.style.height = ((target.scrollHeight)+4) + "px";
 	      //this.info[target.id].height=target.offsetHeight;
 	      //this.info[target.id].width=target.offsetWidth;	
 	      //$c(this.info);
@@ -1088,12 +1118,13 @@
 		  
 		  
 	      case 71: //G
-		  $c(id);
-		  this.resOn(id);
-		  $c(id);
+		  //this.resOn(id);
 		  this.$nextTick(() => {
-		      var target=$gc("active_result_text")[0]
-		      $c(target);
+		      this.resOn(id)
+		      var target=$gc("res_node_"+id)[0]
+		      $c("target:")
+		      $c("res_node_"+id)
+		      $c(target)
 		      goto(target);
 		  })
 		  break;
@@ -1103,8 +1134,9 @@
 	  OnKeydownFixSize(event){
 	      var target=event.target;
 	      var id=target.id
-	      target.style.height = "auto";
-	      target.style.height = ((target.scrollHeight)+4) + "px";
+	      $ah(target);
+	      //target.style.height = "auto";
+	      //target.style.height = ((target.scrollHeight)+4) + "px";
 	      this.SetThis()
 	  },
       }
@@ -1119,7 +1151,10 @@
   }
   .onalive {
       border-color: red;
-      border-width: 3px;    
+      /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;      
+      border-width: 3px;
   }
   #data_selector{
       float: left;
@@ -1144,7 +1179,10 @@
       float:left; 
   }
   #data_engine_info div{
+      margin:3px;
       text-align:left;
+      float:right;
+      width:200px;
   }
 
   
@@ -1186,5 +1224,9 @@
     margin-top:0px
 }
 
-
+.active_res{
+    border-style:solid;
+    padding:0px;
+    border-color: red;    
+}
 </style>

@@ -1,19 +1,19 @@
 <template>
   <div class="node_syntax">
-    <h1>This is an about framework</h1>
+    <h1>framework</h1>
   </div>
   
   <div class="node_syntax">
-    <h1>This is an about node syntax</h1>
+    <h1>node syntax</h1>
   </div>
 
   
   <div class="node_syntax">
-    <h1>This is an about canvas</h1>
+    <h1>canvas hotkey</h1>
   </div>
 
   <div class="node_syntax">
-    <h1>This is an about code editor</h1>
+    <h1>code editor</h1>
   </div>
   
   <div class="hotkey">
