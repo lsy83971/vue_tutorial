@@ -358,6 +358,8 @@
 	  $g('jsm_canvas').style.left='0px'
 	  $g('jsm_canvas').style.right='0px'
 	  pxy = this;
+	  editor = ace.edit("code_editor");
+	  editor.session.setMode("ace/mode/python");
       },
       updated() {
 	  if (this.opts.isalive == 1){
@@ -1105,12 +1107,12 @@
 		  this.contextNode(id);
 		  break;
 
-	      case 38: //T
+	      case 38: //c-up
 		  if (event.ctrlKey){
 		      this.upNode(id);		      
 		  }
 		  break;
-	      case 40: //T
+	      case 40: //c-down
 		  if (event.ctrlKey){
 		      this.downNode(id);		      
 		  }

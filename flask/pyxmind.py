@@ -66,6 +66,7 @@ class codeParser:
             
         code = code.replace("$f", "self.fromData")
         code = code.replace("$t", "self.toData")
+        code = code.replace("$n", "self")
         code = code.replace("$r", "self.root.fromData")
         code = code.replace("$i", "self.iterfunc")
         code = code.replace("$g", "self.attr")

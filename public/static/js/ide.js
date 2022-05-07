@@ -1,8 +1,6 @@
 let editor;
-
 window.onload = function() {
     editor = ace.edit("code_editor");
-    //editor.setTheme("ace/theme/monokai");
     editor.session.setMode("ace/mode/python");
 }
 
@@ -16,16 +14,12 @@ function changeLanguage() {
 
 function executeCode() {
     $.ajax({
-
         url: "/ide/app/compiler.php",
-
         method: "POST",
-
         data: {
             language: $("#languages").val(),
             code: editor.getSession().getValue()
         },
-
         success: function(response) {
             $(".output").text(response)
         }
