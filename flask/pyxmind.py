@@ -116,14 +116,22 @@ class calcNode:
         return self
 
     def result(self):
-        return deepcopy({"data": self.toData,
-                "route": self.route,
-                "id": self.id,
-                "name": self.ci.name, 
-                "err": self.err,
-                "eroute": self.eroute,
-                })
-    
+        try:
+            return deepcopy({"data": self.toData,
+                    "route": self.route,
+                    "id": self.id,
+                    "name": self.ci.name, 
+                    "err": self.err,
+                    "eroute": self.eroute,
+                    })
+        except:
+            return {"data": self.toData,
+                    "route": self.route,
+                    "id": self.id,
+                    "name": self.ci.name, 
+                    "err": self.err,
+                    "eroute": self.eroute,
+                    }
     def receive(self, res):
         """
         step1
@@ -193,12 +201,12 @@ class calcNode:
         code = self.ci.code
         self.exec()
         if tp == "null":
-            self.stack.append(deepcopy(self.result()))
+            self.stack.append(self.result())
             return
         
         if tp != "iter":
             yield self.result()
-            self.stack.append(deepcopy(self.result()))
+            self.stack.append(self.result())
         else:
             try:
                 for i in self.iterfunc(self):
@@ -206,14 +214,14 @@ class calcNode:
                     self.route = deepcopy(self.rawroute)
                     self.route[ - 1] = self.route[ - 1] + "##key:" + i["key"]
                     yield self.result()
-                    self.stack.append(deepcopy(self.result()))
+                    self.stack.append(self.result())
             except:
                 self.toData = "iterError!"
                 self.err="Error:\n" + traceback.format_exc()
                 self.route = deepcopy(self.rawroute)
                 self.eroute = self.route
                 yield self.result()
-                self.stack.append(deepcopy(self.result()))
+                self.stack.append(self.result())
 
     def iterChd(self):
         tp = self.ci.h0
@@ -245,7 +253,6 @@ class calcNode:
                 yield from self.iterSur(tmp_res)
             else:
                 yield tmp_res
-
 
 class result_parse:
     @staticmethod

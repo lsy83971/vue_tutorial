@@ -17,9 +17,7 @@
     <p>
       Pipeline is consist of nodes and pipes
     </p>
-    <h3>
-      pipe
-    </h3>
+    <h3>pipe</h3>
     <p>
       pipes defines who's the parent and who's the child.
 
@@ -27,9 +25,7 @@
     <p>
       when pipes link two nodes together. the one on the left is parent, and the one on the right is child
     </p>
-    <h3>
-      node
-    </h3>
+    <h3>node</h3>
     <p>
       Node receives data from its parent, and execute some code, then produce the target data and pass it to its children
     </p>
@@ -58,10 +54,7 @@
     <p>
       and there are planty of shortcuts and navigator, that make the coding and debugging quite convience.
     </p>
-    <h3>
-      editing pipeline
-    </h3>
-
+    <h3>editing pipeline</h3>
     <p>
       click on any node then press ESC, you may find that editing is prevented, and the block turn red. that means you enter function mode.
     </p>
@@ -86,9 +79,7 @@
     <p>
       when press space, you can exit function mode and start editing.
     </p>
-    <h3>
-      editing node
-    </h3>
+    <h3>editing node</h3>
     <p>
       you can editing the code like python editor
     </p>
@@ -104,75 +95,91 @@
       2. $f(f short for from) is the data from parent(for root node, $f is the source data)
       3. $t is your target
     </p>
-    <h3>
-      here are some node examples:
-    </h3>
+    <h3>here are some node examples:</h3>
     <p>
       example1: give what receive from the parent
     </p>
-    <textarea cols="30">
-      raw
-      $t=$f
-    </textarea>
+    <div>
+      <textarea cols="30">
+	raw
+	$t=$f
+      </textarea>
+    </div>      
     <p>
       example2: receive n and pass n+1
     </p>
+    <div>    
     <textarea cols="30">
       raw
       $t=$f+1
     </textarea>
+    </div>    
     <p>
       example3: receive a list and pass the first element of a list
     </p>
+    <div>    
     <textarea cols="30">
       raw
       $t=$f[0]
     </textarea>
+    </div>    
     <p>
       example4: no matter what the node receive, just pass 1
     </p>
+    <div>
     <textarea cols="30">
       raw
       $t=1;
     </textarea>
+    </div>    
     <p>
       example5: very simple pipeline;node1 returns3;node2 returns4;node3 returns6;
     </p>
-    <img alt="Vue logo" src="../assets/pipeline_example1.png">
+    <div>
+      <img alt="Vue logo" src="../assets/pipeline_example1.png">
+    </div>      
     <h3>more types: 'as' and 'copy'</h3>
     <p>'as' and 'copy' make very tiny difference from 'raw'
     </p>
     <p>in 'as' type, you just give a expression, then it will automaticly pass it to $t.
     </p>
     <p>example for 'as':</p>
+    <div>    
     <textarea cols="30">
       as
       $f+1
     </textarea>
+    </div>    
     <p>
       is the same as 
     </p>
+    <div>
     <textarea cols="30">
       raw
       $t=$f+1
     </textarea>
+    </div>    
     <p>in 'copy' type, you just give make some change to $f and, then it will automaticly pass $f to $t.
     </p>
     <p>Important the change on $t will also change the parent data, if the data's type is not simple type. and that's very useful.
     </p>
     <p>example for 'copy':</p>
+    <div>    
     <textarea cols="30">
       copy
       $f['a']=1
     </textarea>
+    </div>    
     <p>
       is the same as 
     </p>
+    <div>    
     <textarea cols="30">
       raw
       $f['a']=1
       $t=$f
     </textarea>
+    </div>    
     <h3>Global var: $g</h3>
     <p>In ordinary situation, in a node's view, the only information you know is the data that received from parent</p>    
     <p>But under some complecated circumstance, you may want to pass information from one node to another that is not under relationship of child and parent</p>
@@ -267,17 +274,26 @@
   padding-left:50px;
   padding-right:50px;  
   }
-  p {
+  #about_total p {
   text-align:left;
   }
-  h1 {
+  #about_total h1 {
   text-align:left;
   }
-  h2 {
+  #about_total h2 {
   text-align:left;
   }
-  h3 {
+  #about_total h3 {
   text-align:left;
+  }
+  #about_total div{
+      overflow:auto;
+  }
+  #about_total textarea {
+  float:left;
+  }
+  #about_total img {
+  float:left;
   }
   
 </style>  

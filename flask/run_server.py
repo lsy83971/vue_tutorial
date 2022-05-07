@@ -133,8 +133,11 @@ def tree():
     
     ct.nodes["root"].receive(res)
     ##print([i for i in ct.nodes["root"]. iter()])
-    res = deepcopy([i for i in ct.nodes["root"]. iter()])
-    node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
+    #res = deepcopy([i for i in ct.nodes["root"]. iter()])
+    res = [i for i in ct.nodes["root"]. iter()]
+
+    #node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
+    node_res = {i:j.stack for i, j in ct.nodes.items()}
 
     for i in res:
         result_parse.verr(i)
