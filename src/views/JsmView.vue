@@ -27,7 +27,9 @@
 	<div>
 	  focusNode:{{anode()}}
 	</div>
-	
+	<div>
+	  error:{{nodeiserr()}}
+	</div>
       </div>
       </div>
       <div id='jsm_outer'
@@ -375,6 +377,28 @@
 		  return this.opts.active_node
 	      }
 	  },
+
+	  nodeiserr(){
+	      var n=this.anode();
+	      if (n==0){
+		  return 0
+	      }else{
+		  var targets=this.node_res[n]
+		  if (!targets){
+		      return 0
+		  }
+		  var c=0;
+		  targets.forEach((x) => {
+		      if (x["err"] != ""){
+			  c=c+1;
+		      }
+		  })
+		  return c;
+
+	      }
+
+	  },
+	  
 	  nra_cls(node){
 	      var d=new Object()
 	      d["active_res"]=(node.id==pxy.opts.active_result_node)
