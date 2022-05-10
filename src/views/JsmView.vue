@@ -1,4 +1,5 @@
 <template>
+  <div>GGG</div>
   <div style='overflow:auto'>  
     <div style='float:left'>
       <p>
@@ -389,7 +390,7 @@ export default {
     updated() {
 	if (this.opts.isalive == 1){
   	    this.WatchThis();	    	    
-  	    this.SetThis();	    
+  	    //this.SetThis();	    
 	}
     },
     methods: {
@@ -529,7 +530,7 @@ export default {
 			   this.struct=d.struct;
 			   this.opts=d.opts;
 			   //this.WatchThis();
-			   //this.SetThis();
+			   this.SetThis();
 		       }))
 	    //pxy.WatchThis()
 	},
@@ -732,6 +733,7 @@ export default {
 	    this.struct[name]=[];
 	    this.info[name]=structuredClone(opts.node)
 	    this.WatchThis();
+	    this.$nextTick(() => {this.SetThisBack(name);})
 	    return name
 	    //this.SetThis();
 	},
@@ -746,10 +748,13 @@ export default {
 	    this.struct[name]=[];
 	    this.info[name]=structuredClone(opts.node)
 	    this.WatchThis();
-	    //this.SetThis();
+	    this.$nextTick(() => {this.SetThisBack(name);})
 	},
 	
 	DropNode(i){
+	    var parent=this.parent[i]
+	    var front=this.front[i]
+	    
 	    $d.activeElement.blur();	    
 	    this.opts.isalive=0
 	    var desc=this.GetDescendantSur(i);
@@ -762,8 +767,6 @@ export default {
 	    for (let j in desc){
 		var n=desc[j];
 		var p=this.parent[n]
-		$c(n)
-		$c(p)		
 		if (p in this.struct){
 		    var l=this.struct[p];
 		    var filtered=l.filter((value, index, arr) => {
@@ -772,13 +775,28 @@ export default {
 		    this.struct[p]=filtered
 		}
 	    }
+
+	    
 	    if (i in this.front){
 		p=this.front[i]
 		this.Get(p).sur=0;
 	    }
 	    this.opts.isalive=1;
 	    this.WatchThis();
-	    this.SetThis();
+	    this.$nextTick(
+		() => {
+		    if (!!front){
+			this.SetThisBack(front)
+			return
+		    }
+		    if (parent){
+			this.SetThisBack(parent)
+			return
+		    }
+		    
+		}
+	    )
+
 	},
 	HideNode(i){
 	    this.Get(i).show=0;
@@ -793,7 +811,7 @@ export default {
 	ToggleNode(i){
 	    this.Get(i).show=1-this.Get(i).show
 	    this.WatchThis();
-	    this.SetThis();
+	    this.SetThisBack(i);
 	},
 	copyNode(f){
 	    this.cpnode=f
@@ -807,7 +825,7 @@ export default {
 	    $c(pl)
 	    zIndexUp(pl,index)
 	    this.WatchThis();
-	    this.SetThis();
+	    this.SetThisBack(p);
 	    
 	},
 	downNode(f){
@@ -820,7 +838,7 @@ export default {
 	    $c(index)	      
 	    zIndexDown(pl,index)
 	    this.WatchThis();
-	    this.SetThis();
+	    this.SetThisBack(p);
 	},
 	pasteNode(t){
 	    this.copyPasteNode(this.cpnode,t)
@@ -831,6 +849,7 @@ export default {
 	    Object.assign(this.info,cpinfo["info"])
 	    this.struct[t].push(cpinfo["namemap"][f]);
 	    this.WatchThis();
+	    this.$nextTick(() => {this.SetThisBack(cpinfo['root']);})
 	},
 	contextNode(n){
 	    this.context={"node":n}
@@ -904,7 +923,6 @@ export default {
 	    ctx.clearRect(0,0,this.opts.width,this.opts.height)
 	},
 	SetCanvas(){
-	    this.Get('root').h3
 	    var w=this.Get('root').w3+2*opts.hmargin;
 	    var h=this.Get('root').h3+2*opts.vmargin;
 	    w=Math.max(this.opts.width,w);
@@ -914,6 +932,7 @@ export default {
 	    $g('jsm_canvas').height=h
 	    $g('jsm_canvas').width=w
 	    this.SetCanvasClear();
+	    $c("CANVAS CLEAR");
 	    for (let i in this.info){
 		if (this.isshowchildren[i]){
 		    for (let j in this.struct[i]){
@@ -991,6 +1010,54 @@ export default {
 	    n.w3=n.w1+n.w2_add+n.w4_add
 	    n.h3=Math.max(n.h1,n.h2,n.h4)		
 	},
+
+	SetLayoutBack(i){
+	    this.SetSize(i);
+	    var n=this.Get(i)
+	    var c=this.GetChildren(i);
+	    if ((c.length==0) || (n.show==0)){
+		n.w2=0;
+		n.h2=0;
+		n.w2_add=0
+	    }else{
+		var w2=0;
+		var h2=0;
+		for (let j in c){
+		    this.Get(c[j]).h4=h2;		    
+		    w2=Math.max(w2,this.Get(c[j]).w3);
+		    h2=h2+this.Get(c[j]).h3+opts.vspace;
+		}
+		h2=h2-opts.vspace;
+		n.w2=w2
+		n.h2=h2
+		n.w2_add=w2+opts.hspace
+	    }
+
+
+	    if ((n.sur==0) || (n.show==0)){
+		n.h4=0;
+		n.w4=0;
+		n.w4_add=0;
+	    }else{
+		var sur=this.Get(n.sur)
+		n.w4=sur.w3;
+		n.h4=sur.h3;
+		n.w4_add=n.w4+opts.hspace
+	    }
+	    
+	    n.w3=n.w1+n.w2_add+n.w4_add
+	    n.h3=Math.max(n.h1,n.h2,n.h4)
+
+	    
+	    if (!!this.front[i]){
+		this.SetLayoutBack(this.front[i])
+		return
+	    }
+	    if (!!this.parent[i]){
+		this.SetLayoutBack(this.parent[i])
+		return
+	    }
+	},	
 	
 	SetPositionX(i,x){
 	    var n=this.Get(i);
@@ -1054,23 +1121,33 @@ export default {
 		this.SetPositionX(i,x)
 		this.SetPositionY(i,y)
 	    }
-	    
-	    var c=this.GetChildren(i);
-	    for (let j in c){
-		this.SetPosition(c[j])
-	    }
-	    if (n.sur!=0){
-		this.SetPosition(n.sur)
+
+	    if (this.isshow[i]==1){
+		var c=this.GetChildren(i);
+		for (let j in c){
+		    this.SetPosition(c[j])
+		}
+		if (n.sur!=0){
+		    this.SetPosition(n.sur)
+		}
 	    }
             //node_element.style.left = (_offset.x + p.x) + 'px';
             //node_element.style.top = (_offset.y + p.y) + 'px';
-	    
 	},
+	
 	SetThis(){
 	    this.SetLayout('root');
 	    this.SetPosition('root');	
 	    this.SetCoordinate();
 	    this.SetCanvas();	      
+	},
+
+
+	SetThisBack(i){
+	    this.SetLayoutBack(i);
+	    this.SetPosition('root');	
+	    this.SetCoordinate();
+	    this.SetCanvas();
 	},
 	
 	
@@ -1087,7 +1164,7 @@ export default {
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
-	    this.SetThis();
+	    this.SetThisBack(id);
 	    pxy.opts.active_input_node=id;
 	    //pxy.opts.active_node=id;	    
 	},
@@ -1101,7 +1178,7 @@ export default {
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
-	    this.SetThis();
+	    this.SetThisBack(id);
 	    pxy.opts.active_node=0;
 	    pxy.opts.active_input_node=0;
 	},
@@ -1207,10 +1284,19 @@ export default {
 	  OnKeydownFixSize(event){
 	      var target=event.target;
 	      var id=target.id
+	      var h_old=target.style.height;
+	      var w_old=target.style.width;
 	      $ah(target);
-	      //target.style.height = "auto";
-	      //target.style.height = ((target.scrollHeight)+4) + "px";
-	      this.SetThis()
+	      var h_new=target.style.height;
+	      var w_new=target.style.width;
+	      if (h_old != h_new){
+		  this.SetThisBack(id)
+		  return
+	      }
+	      if (w_old != w_new){
+		  this.SetThisBack(id)
+		  return
+	      }
 	  },
       }
   }
