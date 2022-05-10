@@ -132,6 +132,16 @@ class calcNode:
                     "err": self.err,
                     "eroute": self.eroute,
                     }
+        
+    def result_point(self):
+        return {"data": self.toData,
+                "route": self.route,
+                "id": self.id,
+                "name": self.ci.name, 
+                "err": self.err,
+                "eroute": self.eroute,
+                }
+        
     def receive(self, res):
         """
         step1
@@ -205,7 +215,7 @@ class calcNode:
             return
         
         if tp != "iter":
-            yield self.result()
+            yield self.result_point()
             self.stack.append(self.result())
         else:
             try:
@@ -213,14 +223,14 @@ class calcNode:
                     self.toData = i["toData"]
                     self.route = deepcopy(self.rawroute)
                     self.route[ - 1] = self.route[ - 1] + "##key:" + i["key"]
-                    yield self.result()
+                    yield self.result_point()
                     self.stack.append(self.result())
             except:
                 self.toData = "iterError!"
                 self.err="Error:\n" + traceback.format_exc()
                 self.route = deepcopy(self.rawroute)
                 self.eroute = self.route
-                yield self.result()
+                yield self.result_point()
                 self.stack.append(self.result())
 
     def iterChd(self):

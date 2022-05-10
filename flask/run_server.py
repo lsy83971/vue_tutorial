@@ -88,8 +88,8 @@ def code():
     try:
         try:
             ti = tm.getTreeInfo()
-            toDataDict = {i:j.toData for i, j in ti.tree.nodes.items()}
-            fromDataDict = {i:j.fromData for i, j in ti.tree.nodes.items()}
+            toDataDict = {i:j.toData for i, j in ti.tree.nodes.items() if hasattr(j, 'toData')}
+            fromDataDict = {i:j.fromData for i, j in ti.tree.nodes.items() if hasattr(j, 'fromData')}
             if __context["node"] != 0:
                 tmp_node = __context["node"]
                 toData = toDataDict[tmp_node]
