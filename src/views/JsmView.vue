@@ -56,16 +56,17 @@
       </div>
     </div>
     <div class="collapse multi-collapse" id="multiCollapseExample2">
-      <div id="code_editor" class="input"
-	     style='float:left;height:300px'
+      <div style='overflow:auto;float:left'>
+	<div id="code_editor" class="input"
+	     style='height:300px'
 	     >
+	</div>
       </div>
       
-      <!-- button style='width:100%;float:left' @click='FlaskSendCode()'>SendCode!</button -->
-      <div style='overflow;height:300px'>	
+      <div style='height:306px;float:left;margin-left:5px'>	
 	<textarea id="code_result"
 		  v-model='code_res'
-		  style='height:300px'
+		  style='height:300px;resize:none'
 		  >
 	</textarea>
       </div>
