@@ -1,4 +1,17 @@
 <template>
+  <section>
+    <div id="PopoverContent" class="d-none">
+      <div class="input-group">
+        <input type="text"
+	       class="form-control"
+	       placeholder="Recipient's username"
+	       id='popoverinput'
+	       oninput='pxy.popovertoname(this.value)'
+	       >
+      </div>
+    </div>
+  </section>
+  
   <div style='overflow:auto'>  
     <div style='float:left'>
       <p style='margin-bottom:3px'>
@@ -75,10 +88,10 @@
   <nav aria-label="breadcrumb"
        style='padding:5px;padding-left:10px;height:30px'>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item">context:{{context.node}}</li>
-      <li class="breadcrumb-item">focusNode:{{anode()}}</li>
-      <li class="breadcrumb-item">Err:{{nodeiserr()}}</li>
-      <li class="breadcrumb-item">totalErr:{{totalerr()}}</li>    
+      <li class="breadcrumb-item">context: {{context.node}}</li>
+      <li class="breadcrumb-item">focusNode: {{anodeInfo()}}</li>
+      <li class="breadcrumb-item">Err: {{nodeiserr()}}</li>
+      <li class="breadcrumb-item">totalErr: {{totalerr()}}</li>
     </ol>
   </nav>
   
@@ -91,7 +104,7 @@
       <canvas id='jsm_canvas' style='position:absolute' z-index='1' />    	
       <template  v-for='(node, idx) in info' :key="idx">
 	<textarea
-      	  style="z-index:auto;resize:both;"
+      	  style="z-index:auto;resize:both;height:30px;width:180px"
       	  @focus='OnFocus($event)'
       	  @blur='OnBlur($event)'
       	  @keydown='OnKeydown($event)'
@@ -136,7 +149,7 @@
 	    >
 	    <tr :class="nra_cls(node)">
 	      <td style='text-align:left'
-		  @click='ActiveOn(node.id)'
+		  @click='ActiveOn(node.id,true)'
 		  >{{node.id}}</td>
 	      <td style='text-align:left'>{{node.name_abbr}}</td>	  
 	      <td style='text-align:left'>{{node.route}}</td>
@@ -166,7 +179,7 @@
 	<template v-for='(node, idx) in res' :key="idx">
 	  <tr :class="ra_cls(node)">	  
 	    <td style='text-align:left'
-		@click='ActiveOn(node.id)'		
+		@click='ActiveOn(node.id,true)'		
 		>{{node.id}}</td>
 	    <td style='text-align:left'>{{node.name_abbr}}</td>	  
 	    <td style='text-align:left'>{{node.route}}</td>
@@ -225,15 +238,22 @@ import axios from 'axios';
 
 var $d = document;  
 var $g = function (id) { return $d.getElementById(id); };
-var $ge = function (id) { return $d.getElementById('e_'+id); };
+var $ge = function (id) { return $d.getElementById('e_'+id)};
 var $gc = function (id) { return $d.getElementsByClassName(id); };
 var $ah = function (target) {
-    target.style.height = "auto";
-    target.style.height = (target.scrollHeight+5) + "px";    
+    var lines=target.value.split("\n");
+    if (lines.length<=1){
+	target.style.height = 30+'px'
+    }else{
+	target.style.height = "auto";
+	target.style.height = (target.scrollHeight+2) + "px";
+    }
 }
 var $c = console.log;
 var $cr = function (tag) { return $d.createElement(tag); };
 var $w = global
+
+
 
 function goto(tag){
     let bridge = tag;
@@ -255,11 +275,12 @@ var opts={
     width:1000,
     hmargin:100,
     vmargin:50,
-    hspace:30,
-    vspace:20,
+    hspace:20,
+    vspace:15,
     expandsize:14,
     node:{
-	v:'as $f\n:root',
+	v:'as $f',
+	rawname:'',
 	show:1,
 	sur:0
     }
@@ -353,6 +374,7 @@ export default {
 		'c_0': [],
 	    },
 	    opts:{
+		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
 		"offset_y":200,
@@ -361,7 +383,10 @@ export default {
 		"isalive":1,
 		"active_node":0,
 		"active_input_node":0,
+		"last_active_node":0,
+		"active_popover_node":0,
 		"active_result_node":0,
+		"popover":0,		
 	    },
 	    node_res:{},
 	    res:{},
@@ -371,6 +396,26 @@ export default {
 	}
     },
     computed: {
+	noderawname:{
+	    get () {
+		$c("GETVALUE:")		
+		var nodeid=this.opts.last_active_node
+		if (nodeid==0) {
+		    return ""
+		} else {
+		    return this.info[nodeid].rawname
+		}
+	    },
+	    set (val) {
+		$c("SETVALUE:")
+		var nodeid=this.opts.last_active_node
+		if (nodeid==0) {
+		    return ""
+		} else {
+		    this.info[nodeid].rawname=val
+		}
+	    }
+	},
     },
     watch: {
 	// struct(){
@@ -384,6 +429,7 @@ export default {
 	$g('jsm_canvas').style.left='0px'
 	$g('jsm_canvas').style.right='0px'
 	pxy = this;
+
 	//editor = ace.edit("code_editor");
 	//editor.session.setMode("ace/mode/python");
     },
@@ -394,6 +440,42 @@ export default {
 	}
     },
     methods: {
+	currentrawname(){
+	    var nodeid=pxy.opts.active_popover_node;
+	    $c(nodeid);	    	    
+	    return pxy.info[nodeid].rawname
+	},
+	popovertoname(v){
+	    $c(v);
+	    var nodeid=pxy.opts.active_popover_node;
+	    $c(nodeid);	    	    
+	    pxy.info[nodeid].rawname=v
+	},
+	NodePopoverHideOther(){
+	    var oldid=this.opts.active_popover_node;
+	    $('#'+oldid).popover('hide');
+	},
+	NodePopoverShow(id){
+	    if (id!=this.opts.active_popover_node){
+		this.NodePopoverHideOther();
+	    }
+	    $c("toggle:");
+	    $c(id);
+	    this.opts.active_popover_node=id
+	    $('#'+id).popover('show')
+
+
+
+	},
+	NodePopoverHide(id){
+	    if (id!=this.opts.active_popover_node){
+		this.NodePopoverHideOther();		
+	    }
+	    $c("toggle:");
+	    $c(id);
+	    this.opts.active_popover_node=id
+	    $('#'+id).popover('hide')
+	},
 	anode(){
 	    if (this.opts.active_node==0){
 		return this.opts.active_input_node
@@ -401,7 +483,27 @@ export default {
 		return this.opts.active_node
 	    }
 	},
-	
+	anodeObj(){
+	    var nodeid=this.anode();
+	    if (nodeid==0){
+		return {}
+	    }else{
+		return this.info[nodeid]
+	    }
+	},
+	anodeInfo(){
+	    var nodeid=this.anode()
+	    if (nodeid in this.info){
+		var name=this.info[nodeid].name
+		if (nodeid==name){
+		    return nodeid
+		}else{
+		    return nodeid+' | '+name
+		}
+	    }else{
+		return '0'
+	    }
+	},
 	nodeiserr(){
 	    var n=this.anode();
 	    if (n==0){
@@ -586,18 +688,34 @@ export default {
 		return false
 	    }
 	},
-	ActiveOn(i){
-	    $c("activeOn:")
-	    $c(i);
+	ActiveOn(i,shownode){
+	    if (shownode){
+		$c("GGGG")
+		this.ShowNodeRecur(i);
+		this.WatchThis();
+		this.SetThis();		
+	    }
 	    $g(i).focus()
 	    this.opts.active_node=i
 	    this.opts.active_input_node=0
+
+
+	    
 	},
 	ActiveOff(i){
 	    this.opts.active_node=0
 	    this.opts.active_input_node=i
 	},
 	// 1.get
+	GetParentOrFront(i){
+	    if (!!this.parent[i]){
+		return this.parent[i]
+	    }
+	    if (!!this.front[i]){
+		return this.front[i]
+	    }
+	    return 0
+	},
 	GetChildren(i){
 	    if (i in this.struct){
 		return this.struct[i]
@@ -662,6 +780,8 @@ export default {
 	// 2.watch
 	WatchThis(){
 	    this.WatchParent();
+	    this.WatchActive();	    
+	    this.WatchName();
 	    //this.WatchStruct();
 	    this.WatchShow();
 	    this.WatchExpander();
@@ -683,6 +803,24 @@ export default {
 		}
 	    }
 	    this.front=d1;
+	},
+	WatchActive(){
+	    var anode=this.anode()
+	    if (anode!=0){
+		this.opts.last_active_node=anode
+	    }
+	},
+	WatchName(){
+	    for (let i in this.info){
+		if (!this.info[i].rawname){
+		    this.info[i].rawname=""
+		}
+		if (this.info[i].rawname==""){
+		    this.info[i].name=i
+		}else{
+		    this.info[i].name=this.info[i].rawname;
+		}
+	    };
 	},
 	WatchShowAdd(i){
 	    this.isshow[i]=1;
@@ -808,6 +946,13 @@ export default {
 	    this.WatchThis();
 	    this.SetThis();
 	},
+	ShowNodeRecur(i){
+	    this.Get(i).show=1;
+	    var p=this.GetParentOrFront(i);
+	    if (p!=0){
+		this.ShowNodeRecur(p)
+	    }
+	},
 	ToggleNode(i){
 	    this.Get(i).show=1-this.Get(i).show
 	    this.WatchThis();
@@ -849,7 +994,7 @@ export default {
 	    Object.assign(this.info,cpinfo["info"])
 	    this.struct[t].push(cpinfo["namemap"][f]);
 	    this.WatchThis();
-	    this.$nextTick(() => {this.SetThisBack(cpinfo['root']);})
+	    this.$nextTick(() => {this.SetThis();})
 	},
 	contextNode(n){
 	    this.context={"node":n}
@@ -1158,8 +1303,24 @@ export default {
 	    //target.style.height = "auto";
 	    //target.style.height = ((target.scrollHeight)+4) + "px";
 	    $ah(target);
-	    
-	    
+
+	    this.NodePopoverHideOther();
+	    this.opts.active_popover_node=id;
+	    delete(this.opts.popover);
+	    const popover = new bootstrap.Popover(document.querySelector('#'+id), {
+		container: 'body',
+		title: 'Search',
+		html: true,
+		placement: 'bottom',
+		trigger:'manual',
+		sanitize: false,
+		content() {
+		    return document.querySelector('#PopoverContent').innerHTML;
+		}
+	    })
+	    this.opts.popover=popover
+	    $c("build popover:");
+	    $c(id);
 	    //this.info[target.id].height=target.offsetHeight;
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
@@ -1178,6 +1339,7 @@ export default {
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
+
 	    this.SetThisBack(id);
 	    pxy.opts.active_node=0;
 	    pxy.opts.active_input_node=0;
@@ -1262,11 +1424,19 @@ export default {
 		break;
 	    case 40: //c-down
 		if (event.ctrlKey){
-		    this.downNode(id);		      
+		    this.downNode(id);
 		}
 		break;
+	    case 82: //r
+		this.NodePopoverShow(id)		    
+		break;
 		
+	    case 89: //r
+		this.NodePopoverHide(id);
+		break;
+
 		
+
 	    case 71: //G
 		//this.resOn(id);
 		this.$nextTick(() => {
@@ -1373,7 +1543,8 @@ export default {
 }
 
 html {
-    overflow-y: auto;}
+    overflow-y: auto;
+}
 body{
     width: 100vw;
     overflow:hidden;

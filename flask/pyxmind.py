@@ -110,6 +110,7 @@ class calcNode:
         self.rawcode = info["code"]
         self.id = info["id"]        
         self.chd = info['chd']
+        self.name = info['name']        
         self.sur = info['sur']
         self.ci = codeParser(self.rawcode)
         self.ci.parse()
@@ -120,7 +121,7 @@ class calcNode:
             return deepcopy({"data": self.toData,
                     "route": self.route,
                     "id": self.id,
-                    "name": self.ci.name, 
+                    "name": self.name, 
                     "err": self.err,
                     "eroute": self.eroute,
                     })
@@ -128,7 +129,7 @@ class calcNode:
             return {"data": self.toData,
                     "route": self.route,
                     "id": self.id,
-                    "name": self.ci.name, 
+                    "name": self.name, 
                     "err": self.err,
                     "eroute": self.eroute,
                     }
@@ -137,7 +138,7 @@ class calcNode:
         return {"data": self.toData,
                 "route": self.route,
                 "id": self.id,
-                "name": self.ci.name, 
+                "name": self.name, 
                 "err": self.err,
                 "eroute": self.eroute,
                 }
@@ -292,6 +293,7 @@ class calcTree:
         self.nodes = dict()
         for i, j in self.info.items():
             nodeinfo = {
+                "name": j["name"], 
                 "id": i, 
                 "code": j["v"], 
                 "chd": self.struct[i], 

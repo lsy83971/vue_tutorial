@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import JsmView from '../views/JsmView.vue'
 import JsmViewTest from '../views/JsmViewTest.vue'
+import JsmViewTest1 from '../views/JsmViewTest1.vue'
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
       path: '/jsm',
       name: 'jsmtest',
       component: JsmViewTest
+  },
+  {
+      path: '/jsmtest1',
+      name: 'jsmtest1',
+      component: JsmViewTest1
   }
     
 ]
