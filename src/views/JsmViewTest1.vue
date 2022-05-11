@@ -947,9 +947,10 @@ export default {
 	    this.SetThis();
 	},
 	ShowNodeRecur(i){
-	    this.Get(i).show=1;
+	    //this.Get(i).show=1;
 	    var p=this.GetParentOrFront(i);
 	    if (p!=0){
+		this.Get(p).show=1;
 		this.ShowNodeRecur(p)
 	    }
 	},
