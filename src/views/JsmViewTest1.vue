@@ -1288,40 +1288,49 @@ export default {
 		this.SetPositionY(i,y)
 	    }
 
-//	    if (this.isshow[i]==1){
-//		var c=this.GetChildren(i);
-//		for (let j in c){
-//		    this.SetPosition(c[j])
-//		}
-//		if (n.sur!=0){
-//		    this.SetPosition(n.sur)
-//		}
-	    //	    }
+	    if (this.isshow[i]==1){
+		var c=this.GetChildren(i);
+		for (let j in c){
+		    this.SetPosition(c[j])
+		}
+		if (n.sur!=0){
+		    this.SetPosition(n.sur)
+		}
+	    }
 	    // TODO HARD MODE : SOFT MODE
-	    var c=this.GetChildren(i);
-	    for (let j in c){
-		this.SetPosition(c[j])
-	    }
-	    if (n.sur!=0){
-		this.SetPosition(n.sur)
-	    }
+	    
+//	    var c=this.GetChildren(i);
+//	    for (let j in c){
+//		this.SetPosition(c[j])
+//	    }
+//	    if (n.sur!=0){
+//		this.SetPosition(n.sur)
+//	    }
             //node_element.style.left = (_offset.x + p.x) + 'px';
             //node_element.style.top = (_offset.y + p.y) + 'px';
 	},
 	
 	SetThis(){
-	    this.SetLayout('root');
-	    this.SetPosition('root');	
-	    this.SetCoordinate();
-	    this.SetCanvas();	      
+	    this.$nextTick(
+		() => {
+		    this.SetLayout('root');
+		    this.SetPosition('root');	
+		    this.SetCoordinate();
+		    this.SetCanvas();	      
+		}
+	    )
 	},
 
 
 	SetThisBack(i){
-	    this.SetLayoutBack(i);
-	    this.SetPosition('root');	
-	    this.SetCoordinate();
-	    this.SetCanvas();
+	    this.$nextTick(
+		() => {
+		    this.SetLayoutBack(i);
+		    this.SetPosition('root');	
+		    this.SetCoordinate();
+		    this.SetCanvas();
+		}
+	    )
 	},
 	
 	
@@ -1575,7 +1584,7 @@ html {
     overflow-y: auto;
 }
 body{
-    width: 100vw;
+    width: 99vw;
     overflow:hidden;
     padding-right: calc(100vw - 100%);
 }
