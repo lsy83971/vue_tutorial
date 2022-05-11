@@ -197,6 +197,8 @@
 </template>  
 
 <script>
+
+// TODO: lastnode can click on  
 // todo only surfix
 // node_element.clientHeight;
 //      ³¤¿í:
