@@ -88,10 +88,15 @@
   <nav aria-label="breadcrumb"
        style='padding:5px;padding-left:10px;height:30px'>
     <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a @click="changeonshow('v')">code</a></li>
+      <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
+      <li class="breadcrumb-item"><a @click="changeonshow('rawname')">name</a></li>      
+      
       <li class="breadcrumb-item">context: {{context.node}}</li>
       <li class="breadcrumb-item">focusNode: {{anodeInfo()}}</li>
       <li class="breadcrumb-item">Err: {{nodeiserr()}}</li>
       <li class="breadcrumb-item">totalErr: {{totalerr()}}</li>
+
     </ol>
   </nav>
   
@@ -108,7 +113,7 @@
       	  @focus='OnFocus($event)'
       	  @blur='OnBlur($event)'
       	  @keydown='OnKeydown($event)'
-      	  v-model='node.v'
+      	  v-model='node[opts.onshow]'
       	  :id='idx'
       	  :class="{'readonly': ActiveNodeIs(idx),
       		  'onalive': ActiveNodeIs(idx),
@@ -281,6 +286,7 @@ var opts={
     node:{
 	v:'as $f',
 	rawname:'',
+	onshow:'as $f',
 	show:1,
 	sur:0
     }
@@ -374,6 +380,7 @@ export default {
 		'c_0': [],
 	    },
 	    opts:{
+		"onshow": 'v',
 		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
@@ -386,7 +393,7 @@ export default {
 		"last_active_node":0,
 		"active_popover_node":0,
 		"active_result_node":0,
-		"popover":0,		
+		"popover":0,
 	    },
 	    node_res:{},
 	    res:{},
@@ -440,6 +447,15 @@ export default {
 	}
     },
     methods: {
+	changeonshow(i){
+	    pxy.opts.onshow=i;
+	    pxy.WatchThis();
+	    this.$nextTick(
+		() => {
+		    this.SetThis();
+		}
+	    )
+	},
 	currentrawname(){
 	    var nodeid=pxy.opts.active_popover_node;
 	    $c(nodeid);	    	    
@@ -463,9 +479,6 @@ export default {
 	    $c(id);
 	    this.opts.active_popover_node=id
 	    $('#'+id).popover('show')
-
-
-
 	},
 	NodePopoverHide(id){
 	    if (id!=this.opts.active_popover_node){
@@ -817,9 +830,16 @@ export default {
 		}
 		if (this.info[i].rawname==""){
 		    this.info[i].name=i
+		    this.info[i].rawname=i
 		}else{
 		    this.info[i].name=this.info[i].rawname;
 		}
+		//this.info[i].onshow=this.info[i][this.opts.onshow];
+		this.info[i].id=i;
+		if (!this.opts.onshow){
+		    this.opts.onshow='v'
+		}
+		
 	    };
 	},
 	WatchShowAdd(i){
@@ -957,7 +977,8 @@ export default {
 	ToggleNode(i){
 	    this.Get(i).show=1-this.Get(i).show
 	    this.WatchThis();
-	    this.SetThisBack(i);
+	    //this.SetThisBack(i);
+	    this.SetThis();
 	},
 	copyNode(f){
 	    this.cpnode=f
@@ -1246,7 +1267,6 @@ export default {
 	    n.y6=n.y0+n.h3/2
 	    n.y7=n.y0-n.h4/2
 	    n.y8=n.y0+n.h4/2
-	    
 	},
 	SetPosition(i){
 	    var n=this.Get(i);
@@ -1268,14 +1288,22 @@ export default {
 		this.SetPositionY(i,y)
 	    }
 
-	    if (this.isshow[i]==1){
-		var c=this.GetChildren(i);
-		for (let j in c){
-		    this.SetPosition(c[j])
-		}
-		if (n.sur!=0){
-		    this.SetPosition(n.sur)
-		}
+//	    if (this.isshow[i]==1){
+//		var c=this.GetChildren(i);
+//		for (let j in c){
+//		    this.SetPosition(c[j])
+//		}
+//		if (n.sur!=0){
+//		    this.SetPosition(n.sur)
+//		}
+	    //	    }
+	    // TODO HARD MODE : SOFT MODE
+	    var c=this.GetChildren(i);
+	    for (let j in c){
+		this.SetPosition(c[j])
+	    }
+	    if (n.sur!=0){
+		this.SetPosition(n.sur)
 	    }
             //node_element.style.left = (_offset.x + p.x) + 'px';
             //node_element.style.top = (_offset.y + p.y) + 'px';
