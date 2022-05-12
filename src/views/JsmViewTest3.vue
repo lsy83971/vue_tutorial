@@ -100,7 +100,10 @@
       <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">focusNode: {{anodeInfo()}}</a></li>
       <li class="breadcrumb-item">Err: {{nodeiserr()}}</li>
       <li class="breadcrumb-item">ErrChd: {{chderr()}}</li>      
-      <li class="breadcrumb-item">ErrTotal: {{totalerr()}}</li>
+      <li class="breadcrumb-item">Errs: {{totalerr()}}</li>
+      <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
+      <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
+      <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
       <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
     </ol>
   </nav>
@@ -507,7 +510,7 @@ export default {
     },
     updated() {
 	if (this.opts.isalive == 1){
-	    $c("UPDATE")
+	    //$c("UPDATE")
   	    this.WatchThis();
   	    //this.SetThis();	    
 	}
@@ -668,6 +671,19 @@ export default {
 		return 0
 	    }
 	    return this.err_cnt[n]
+	},
+	StaTotal(){
+	    var s=0
+	    for (let i in this.node_res){
+		s=s+this.node_res[i].length
+	    }
+	    return s
+	},
+	LeafTotal(){
+	    return Object.keys(this.res).length
+	},
+	NodeTotal(){
+	    return Object.keys(this.info).length
 	},
 	totalerr(){
 	    if (!this.err_chd_cnt){
@@ -1171,6 +1187,63 @@ export default {
 	    this.SetThisBack(p);
 	    
 	},
+
+	leftFocus(f){
+	    if (f!="root"){
+		var p=this.parent[f]
+		if (!!p){
+		    this.ActiveOn(p)		    
+		}
+
+	    }
+	},
+	rightFocus(f){
+	    var n=this.struct[f][0]
+	    if (!!n){
+		this.ActiveOn(n)
+	    }
+	},
+	surFocus(f){
+	    var n=this.info[f].sur
+	    if (n){
+		this.ActiveOn(n)
+	    }
+	},
+	frontFocus(f){
+	    var n=this.front[f]
+	    if (!!n){
+		this.ActiveOn(n)
+	    }
+	},
+	
+	upFocus(f){
+	    if (f!="root"){
+		var p=this.parent[f]
+		if (!p){
+		    return
+		}
+		var pl=this.struct[p]
+		var index=pl.indexOf(f)
+		if (index!=0){
+		    this.ActiveOn(pl[index-1])
+		}
+	    }
+	},
+	downFocus(f){
+	    if (f!="root"){
+		var p=this.parent[f]
+		if (!p){
+		    return
+		}
+		var pl=this.struct[p]
+		var length = pl.length
+		var index=pl.indexOf(f)
+		if((index+1) != length){
+		    this.ActiveOn(pl[index+1])		    
+		}
+	    }
+	},
+	
 	downNode(f){
 	    var p=this.parent[f]
 	    var pl=this.struct[p]
@@ -1575,8 +1648,6 @@ export default {
 	    $c(myDate.getMilliseconds())	    
 	},
 	OnKeydown(event){
-	    $c("A")
-	    this.timer()
 	    var target=event.target;
 	    var id=target.id
 	    var k=event.keyCode
@@ -1586,28 +1657,16 @@ export default {
 	    // $c(k);
 	    
 	    if (k == 27){
-		$c("B")
-		this.timer()
-		
-		$c('goto activate:');	    
+		//$c('goto activate:');	    
 		event.preventDefault();
 		this.ActiveOn(id)
 	    }else if (this.opts.active_node==id){
-		$c("C")
-		this.timer()
-		
-		$c('goto activate mode:');	    
+		//$c('goto activate mode:');	    
 		this.OnKeydownActiveMode(event)
-		
 	    }else{
-		$c("D")
-		this.timer()
-		
-		$c('goto default mode:');	    		
+		//$c('goto default mode:');	    		
 		this.OnKeydownFixSize(event);
 	    }
-	    $c("E")
-	    this.timer()
 
 	},
 	OnKeydownActiveMode(event){
@@ -1661,11 +1720,32 @@ export default {
 	    case 38: //c-up
 		if (event.ctrlKey){
 		    this.upNode(id);		      
+		}else{
+		    this.upFocus(id);
 		}
 		break;
+
+	    case 37: //left
+		if (event.shiftKey){
+		    this.frontFocus(id)
+		}else{
+		    this.leftFocus(id);
+		}
+		break;
+
+	    case 39: //right
+		if (event.shiftKey){
+		    this.surFocus(id);		    
+		}else{
+		    this.rightFocus(id);
+		}
+		break;
+		
 	    case 40: //c-down
 		if (event.ctrlKey){
-		    this.downNode(id);
+		    this.downNode(id);		      
+		}else{
+		    this.downFocus(id);
 		}
 		break;
 	    case 82: //r
@@ -1683,9 +1763,6 @@ export default {
 		this.$nextTick(() => {
 		      this.resOn(id)
 		      var target=$gc("res_node_"+id)[0]
-		      $c("target:")
-		      $c("res_node_"+id)
-		      $c(target)
 		      goto(target);
 		  })
 		  break;
@@ -1700,23 +1777,13 @@ export default {
 	      $ah(target);
 	      var h_new=target.style.height;
 	      var w_new=target.style.width;
-
-	      $c("G")
-	      this.timer()
-
 	      
 	      if (h_old != h_new){
-		  
 		  this.SetThisBack(id)
-		  $c("H")
-		  this.timer()
-		  
 		  return
 	      }
 	      if (w_old != w_new){
 		  this.SetThisBack(id)
-		  $c("I:")
-		  this.timer()
 		  return
 	      }
 	  },
