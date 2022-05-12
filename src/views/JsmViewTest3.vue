@@ -237,7 +237,8 @@
 
 <script>
 
-// TODO: focus This fold suffix bug 
+// TODO: focus This fold suffix bug
+// TODO: Paste maintains width and height
 // TODO: lastnode can click on  
 // todo only surfix
 // node_element.clientHeight;
