@@ -11,7 +11,6 @@
       </div>
     </div>
   </section>
-  
   <div style='overflow:auto'>  
     <div style='float:left'>
       <p style='margin-bottom:3px'>
@@ -100,32 +99,29 @@
       <li class="breadcrumb-item">context: {{context.node}}</li>
       <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">focusNode: {{anodeInfo()}}</a></li>
       <li class="breadcrumb-item">Err: {{nodeiserr()}}</li>
-      <li class="breadcrumb-item">totalErr: {{totalerr()}}</li>
-
+      <li class="breadcrumb-item">ErrChd: {{chderr()}}</li>      
+      <li class="breadcrumb-item">ErrTotal: {{totalerr()}}</li>
+      <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
     </ol>
   </nav>
   
   <div id='jsm_outer'
-       style='height:85vh;width:99%;
+       style="width:99%;height:calc(95vh - 160px);
       	      border-style:solid;
       	      margin:5px
-      	      '>
+      	      ">
     <div id='jsm_inner' style="overflow: auto;position: relative;width: 100%;height: 100%;">
       <canvas id='jsm_canvas' style='position:absolute' z-index='1' />    	
       <template  v-for='(node, idx) in info' :key="idx">
 	<textarea
-      	  style="z-index:auto;resize:both;height:30px;width:180px"
+      	  style="height:30px;width:180px;z-index:auto;resize:both"
       	  @focus='OnFocus($event)'
       	  @blur='OnBlur($event)'
       	  @keydown='OnKeydown($event)'
       	  v-model='node[node.onshow]'
       	  :id='idx'
-      	  :class="{
-		  'readonly': ActiveNodeIs(idx),
-      		  'onalive': ActiveNodeIs(idx),
-		  'nodeerror': nodeiserr(idx),
-		  'nodenotcode': nodeisnotcode(idx),		  
-  		  }">
+      	  :class="boxClass(idx)">
+
 	</textarea>
 	
 	<span class='dot'
@@ -134,10 +130,8 @@
       </template>
     </div>
   </div>
-  
-  
   <div id='tree_result' style='margin:3px;'>
-    <table class="table">  
+    <!-- table class="table">  
       <colgroup>
 	<col width="30px" />
 	<col width="30px" />
@@ -171,8 +165,45 @@
 	  </template>
 	</template>
       </tbody>
+    </table -->
+
+    <table class="table">  
+      <colgroup>
+	<col width="30px" />
+	<col width="30px" />
+	<col width="60px" />
+	<col width="140px" />	
+      </colgroup>    
+      <thead>
+	<tr>
+          <th>id</th>
+          <th>name</th>
+          <th>route</th>
+          <th>result</th>		  
+	</tr>
+      </thead>
+      <tbody>
+	<template v-for='(nodes, idx) in noderesult' :key="idx">
+	  <template
+	    style="text-align:left"
+	    class="node_res"
+	    v-for='(node, idx) in nodes'
+	    :key="idx" :node_res_id="node.id"
+	    >
+	    <tr :class="nra_cls(node)">
+	      <td style='text-align:left'
+		  @click='ActiveOn(node.id,true)'
+		  >{{node.id}}</td>
+	      <td style='text-align:left'>{{node.name_abbr}}</td>	  
+	      <td style='text-align:left'>{{node.route}}</td>
+	      <td style='text-align:left'>{{node.data.b_data}}</td>	    	      
+	    </tr>
+	  </template>
+	</template>
+      </tbody>
     </table>
-    
+
+	    
     <table class="table">
       <colgroup>
 	<col width="30px" />
@@ -286,6 +317,18 @@ function goto(tag){
     })
 }
 
+function heightoftag(tag){
+    let bridge = tag;
+    let body = $d.body
+    let height = 0;
+    do {
+	height += bridge.offsetTop;
+	bridge = bridge.offsetParent;
+    } while(bridge !== body)
+    return height+'px'
+}
+
+
 var opts={
     height:800,
     width:1000,
@@ -390,6 +433,7 @@ export default {
 		'c_0': [],
 	    },
 	    opts:{
+
 		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
@@ -397,6 +441,7 @@ export default {
 		"width":opts.width,
 		"height":opts.height,
 		"isalive":1,
+		"color_mode":'code',
 		"active_node":0,
 		"active_input_node":0,
 		"last_active_node":0,
@@ -404,6 +449,9 @@ export default {
 		"active_result_node":0,
 		"popover":0,
 	    },
+	    isshow:{},
+	    //err_chd_cnt:null,
+	    //err_cnt:null,
 	    node_res:{},
 	    res:{},
 	    code_res:"",
@@ -412,6 +460,14 @@ export default {
 	}
     },
     computed: {
+	noderesult(){
+	    var nodeid=this.opts.last_active_node
+	    if (!(nodeid==0)){
+		return {nodeid:this.node_res[nodeid]}
+	    }else{
+		return {}
+	    }
+	},
 	noderawname:{
 	    get () {
 		var nodeid=this.opts.last_active_node
@@ -449,11 +505,69 @@ export default {
     },
     updated() {
 	if (this.opts.isalive == 1){
+	    $c("UPDATE")
   	    this.WatchThis();
   	    //this.SetThis();	    
 	}
     },
     methods: {
+	boxClass(idx){
+	    var o=new Object()
+	    o['readonly']=this.ActiveNodeIs(idx)
+	    o['onalive']=this.ActiveNodeIs(idx)
+	    o['inputBox'+this.info[idx].color]=true
+	    return o
+	   // return {
+	//	'readonly': ActiveNodeIs(idx),
+      	//	'onalive': ActiveNodeIs(idx),
+	//	('inputBox'+this.info[idx].color): true,
+  	    //}
+	},
+
+	CountErr(){
+	    pxy.err_cnt=new Object()
+	    for (let i in pxy.info){
+		var targets=this.node_res[i]
+		if (!targets){
+		    pxy.err_cnt[i]=0
+		}else{
+		    var c=0;
+		    targets.forEach((x) => {
+			if (x["err"] != ""){
+			    c=c+1;
+			}
+		    })
+		    pxy.err_cnt[i]=c
+		}
+	    }
+	},
+	CountChdErr(nodeid){
+	    if (!nodeid){
+		this.CountErr()		
+		var nodeid='root';
+		pxy.err_chd_cnt=new Object();
+	    }
+	    var c=pxy.err_cnt[nodeid];
+	    var chd=this.GetChildrenSur(nodeid);
+	    for (let i in chd){
+		c=c+this.CountChdErr(chd[i])
+	    }
+	    pxy.err_chd_cnt[nodeid]=c
+	    return c
+	},
+	changecolor(mode){
+	    if (!mode){
+		var old=this.opts.color_mode;
+		if (old=="code"){
+		    mode='err'
+		}else{
+		    mode='code'		    
+		}
+	    }
+	    this.opts.color_mode=mode;
+	    this.WatchThis();
+	    this.SetThis();	    
+	},
 	changeNodeonshow(i){
 	    var nodeid=this.opts.last_active_node
 	    if (nodeid!=0){
@@ -544,37 +658,34 @@ export default {
 	    }
 	    if (n==0){
 		return 0
-	    }else{
-		var targets=this.node_res[n]
-		if (!targets){
-		    return 0
-		}
-		var c=0;
-		targets.forEach((x) => {
-		    if (x["err"] != ""){
-			c=c+1;
-		    }
-		})
-		return c;
-		
 	    }
-	    
-	},
-	totalerr(){
-	    var targets=this.node_res
-	    if (!targets){
+	    if (!this.err_cnt){
 		return 0
 	    }
-	    var c=0;
-	    Object.keys(targets).forEach((x) => {
-		targets[x].forEach((x1) => {
-		    if (x1["err"] != ""){
-			c=c+1;
-		    }
-		})
-	    })
-	    return c;
+	    if (!this.err_cnt[n]){
+		return 0
+	    }
+	    return this.err_cnt[n]
 	},
+	totalerr(){
+	    if (!this.err_chd_cnt){
+		return 0
+	    }
+	    return this.err_chd_cnt['root']
+	},
+	chderr(n){
+	    if (!n){
+		var n=this.opts.last_active_node		
+	    }
+	    if (!this.err_chd_cnt){
+		return 0
+	    }
+	    if (!this.err_chd_cnt[n]){
+		return 0
+	    }
+	    return this.err_chd_cnt[n]
+	},
+	
 	nra_cls(node){
 	    var d=new Object()
 	    d["active_res"]=(node.id==pxy.opts.active_result_node)
@@ -608,6 +719,8 @@ export default {
 		utils.post('flask/tree',s,(response => {
 		    pxy.node_res=response.data['node_res'];
 		    pxy.res=response.data['res'];
+		    pxy.CountErr();
+		    pxy.CountChdErr();
 		    alert("load tree success")
 		}))
 	    }catch(err){
@@ -761,6 +874,19 @@ export default {
 		return []
 	    }
 	},
+	GetChildrenSur(i){
+	    if (i in this.struct){
+		var des= this.struct[i]
+	    }else{
+		var des=[]
+	    };
+	    var n=this.Get(i);	    
+	    if (n.sur !=0){
+		des=des.concat([n.sur])		  
+	    }
+	    return des
+	},
+	
 	GetDescendant(i){
 	    var des=this.struct[i];
 	    for (let i in des){
@@ -848,6 +974,7 @@ export default {
 	    }
 	},
 	WatchName(){
+	    var cm=this.opts.color_mode;
 	    for (let i in this.info){
 		if (!this.info[i].rawname){
 		    this.info[i].rawname=""
@@ -863,6 +990,30 @@ export default {
 		if (!this.info[i].onshow){
 		    this.info[i].onshow='v'
 		}
+
+		if (cm=="code"){
+		    if (this.nodeisnotcode(i)){
+			this.info[i].color="blue"
+		    }else{
+			this.info[i].color="black"
+		    }
+		}
+		if (cm=="err"){
+		    if (this.nodeiserr(i)){
+			this.info[i].color="red"
+			
+		    }else{
+			if (this.chderr(i)){
+			    this.info[i].color="black"
+			}else{
+			    this.info[i].color="green"									    
+			}
+			
+		    }
+
+		}
+		
+		
 	    };
 	},
 	WatchShowAdd(i){
@@ -1048,6 +1199,8 @@ export default {
 		if (this.isshow[i]==0){
 		    $g(i).style.position = 'absolute'		    
 		    $g(i).style.visibility = 'hidden';
+		    $g(i).style.left = '10px'
+		    $g(i).style.top = '10px'
 		}else{
 		    var n=this.Get(i);
 		    $g(i).style.position = 'absolute'
@@ -1058,8 +1211,10 @@ export default {
 		}
 		
 		if (this.isexpander[i]==0){
-		    $ge(i).style.position = 'absolute'		    		    
+		    $ge(i).style.position = 'absolute'
 		    $ge(i).style.visibility = 'hidden';
+		    $ge(i).style.left = '10px'
+		    $ge(i).style.top = '10px'
 		}else{
 		    var n=this.Get(i);		    
 		    $ge(i).style.position = 'absolute'
@@ -1108,8 +1263,8 @@ export default {
 	SetCanvas(){
 	    var w=this.Get('root').w3+2*opts.hmargin;
 	    var h=this.Get('root').h3+2*opts.vmargin;
-	    w=Math.max(this.opts.width,w);
-	    h=Math.max(this.opts.height,h);
+	    //w=Math.max(this.opts.width,w);
+	    //h=Math.max(this.opts.height,h);
 	    this.opts.width=w;
 	    this.opts.height=h;
 	    $g('jsm_canvas').height=h
@@ -1409,7 +1564,14 @@ export default {
 	    this.ToggleNode(id)
 	    
 	},
+	timer(){
+	    var myDate = new Date();
+	    $c(myDate.getSeconds())
+	    $c(myDate.getMilliseconds())	    
+	},
 	OnKeydown(event){
+	    $c("A")
+	    this.timer()
 	    var target=event.target;
 	    var id=target.id
 	    var k=event.keyCode
@@ -1419,17 +1581,29 @@ export default {
 	    // $c(k);
 	    
 	    if (k == 27){
+		$c("B")
+		this.timer()
+		
 		$c('goto activate:');	    
 		event.preventDefault();
 		this.ActiveOn(id)
 	    }else if (this.opts.active_node==id){
+		$c("C")
+		this.timer()
+		
 		$c('goto activate mode:');	    
 		this.OnKeydownActiveMode(event)
 		
 	    }else{
+		$c("D")
+		this.timer()
+		
 		$c('goto default mode:');	    		
 		this.OnKeydownFixSize(event);
 	    }
+	    $c("E")
+	    this.timer()
+
 	},
 	OnKeydownActiveMode(event){
 	    var target=event.target;
@@ -1521,14 +1695,23 @@ export default {
 	      $ah(target);
 	      var h_new=target.style.height;
 	      var w_new=target.style.width;
+
+	      $c("G")
+	      this.timer()
+
+	      
 	      if (h_old != h_new){
+		  
 		  this.SetThisBack(id)
-		  $c("fix h")
+		  $c("H")
+		  this.timer()
+		  
 		  return
 	      }
 	      if (w_old != w_new){
-		  $c("fix w")		  
 		  this.SetThisBack(id)
+		  $c("I:")
+		  this.timer()
 		  return
 	      }
 	  },
@@ -1542,7 +1725,17 @@ export default {
       border-radius: 50%;
       display: inline-block;
   }
-  .nodenotcode{
+  .inputBoxgreen{
+      border-color: green;
+      outline-color:green;
+      /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      border-width: 3px;
+  }
+  .inputBoxblue{
       border-color: blue;
       outline-color:blue;
       /* padding:0px;      */
@@ -1553,10 +1746,19 @@ export default {
       border-width: 3px;
       
   }
-  .nodeerror{
+  .inputBoxred{
       border-color: red;
       outline-color:red;
       /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      border-width: 3px;
+      
+  }
+  
+  .inputBox{
       padding-left:0px;
       padding-right:0px;
       padding-top:0px;
@@ -1573,6 +1775,7 @@ export default {
       padding-bottom:0px;      
       
       border-width: 3px;
+      
   }
   #data_selector{
       float: left;
