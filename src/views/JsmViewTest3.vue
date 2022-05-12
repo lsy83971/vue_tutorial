@@ -120,8 +120,11 @@
       	  @keydown='OnKeydown($event)'
       	  v-model='node[node.onshow]'
       	  :id='idx'
-      	  :class="{'readonly': ActiveNodeIs(idx),
+      	  :class="{
+		  'readonly': ActiveNodeIs(idx),
       		  'onalive': ActiveNodeIs(idx),
+		  'nodeerror': nodeiserr(idx),
+		  'nodenotcode': nodeisnotcode(idx),		  
   		  }">
 	</textarea>
 	
@@ -459,6 +462,19 @@ export default {
 	    this.SetThis();
 	    //this.SetThisBack(i);
 	},
+	nodefoldfor(n){
+	    var c=this.GetDescendant(n)
+	    c=c.concat([n])
+	    for (let i in this.info){
+		if ($.inArray(i,c) == -1){
+		    this.info[i].show=0		    
+		}
+	    }
+	    this.ShowNodeRecur(n)
+	    this.WatchThis()
+	    this.SetThis()	
+	},
+	
 	changeonshow(i){
 	    for (let j in pxy.info){
 		pxy.info[j].onshow=i
@@ -519,8 +535,13 @@ export default {
 		return '0'
 	    }
 	},
-	nodeiserr(){
-	    var n=this.opts.last_active_node
+	nodeisnotcode(n){
+	    return (this.info[n].onshow != 'v')
+	},
+	nodeiserr(n){
+	    if (!n){
+		var n=this.opts.last_active_node		
+	    }
 	    if (n==0){
 		return 0
 	    }else{
@@ -1427,6 +1448,10 @@ export default {
 	    case 9: // tab
 		var nodeid=this.ToggleNode(id);
 		break;
+	    case 70:
+		this.nodefoldfor(id);
+		break;
+		
 	    case 46: // DELETE
 		if (id!='root'){
 		    this.DropNode(id)
@@ -1517,12 +1542,36 @@ export default {
       border-radius: 50%;
       display: inline-block;
   }
-  .onalive {
-      border-color: yellow;
-      outline-color:yellow;
+  .nodenotcode{
+      border-color: blue;
+      outline-color:blue;
       /* padding:0px;      */
       padding-left:0px;
-      padding-right:0px;      
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      border-width: 3px;
+      
+  }
+  .nodeerror{
+      border-color: red;
+      outline-color:red;
+      /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      border-width: 3px;
+  }
+  .onalive {
+      border-color: orange;
+      outline-color:orange;
+      /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      
       border-width: 3px;
   }
   #data_selector{

@@ -4,6 +4,7 @@ import JsmView from '../views/JsmView.vue'
 import JsmViewTest from '../views/JsmViewTest.vue'
 import JsmViewTest1 from '../views/JsmViewTest1.vue'
 import JsmViewTest2 from '../views/JsmViewTest2.vue'
+import JsmViewTest3 from '../views/JsmViewTest3.vue'
 
 const routes = [
   {
@@ -38,7 +39,13 @@ const routes = [
       path: '/jsmtest2',
       name: 'jsmtest2',
       component: JsmViewTest2
+  },
+  {
+      path: '/jsmtest3',
+      name: 'jsmtest3',
+      component: JsmViewTest3
   }
+    
     
 ]
 
