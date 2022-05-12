@@ -237,6 +237,7 @@
 
 <script>
 
+// TODO: focus This fold suffix bug 
 // TODO: lastnode can click on  
 // todo only surfix
 // node_element.clientHeight;
@@ -293,7 +294,7 @@ var $ah = function (target) {
 	target.style.height = 30+'px'
     }else{
 	target.style.height = "auto";
-	target.style.height = (target.scrollHeight+2) + "px";
+	target.style.height = (target.scrollHeight+6) + "px";
     }
 }
 var $c = console.log;
