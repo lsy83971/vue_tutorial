@@ -87,10 +87,15 @@
   
   <nav aria-label="breadcrumb"
        style='padding:5px;padding-left:10px;height:30px'>
-    <ol class="breadcrumb">
+    <ol class="breadcrumb"> 
+      <li class="breadcrumb-item">GLOBAL:</li>      
       <li class="breadcrumb-item"><a @click="changeonshow('v')">code</a></li>
       <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
       <li class="breadcrumb-item"><a @click="changeonshow('rawname')">name</a></li>
+      <li class="breadcrumb-item">NODE:</li>            
+      <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">code</a></li>
+      <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
+      <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">name</a></li>
 
       
       <li class="breadcrumb-item">context: {{context.node}}</li>
@@ -384,7 +389,6 @@ export default {
 		'c_0': [],
 	    },
 	    opts:{
-		"onshow": 'v',
 		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
@@ -409,7 +413,6 @@ export default {
     computed: {
 	noderawname:{
 	    get () {
-		$c("GETVALUE:")		
 		var nodeid=this.opts.last_active_node
 		if (nodeid==0) {
 		    return ""
@@ -418,7 +421,6 @@ export default {
 		}
 	    },
 	    set (val) {
-		$c("SETVALUE:")
 		var nodeid=this.opts.last_active_node
 		if (nodeid==0) {
 		    return ""
@@ -446,15 +448,24 @@ export default {
     },
     updated() {
 	if (this.opts.isalive == 1){
-  	    this.WatchThis();	    	    
+  	    this.WatchThis();
   	    //this.SetThis();	    
 	}
     },
     methods: {
+	changeNodeonshow(i){
+	    var nodeid=this.opts.last_active_node
+	    if (nodeid!=0){
+		this.info[nodeid].onshow=i
+	    }
+	    this.SetThis();
+	    //this.SetThisBack(i);
+	},
 	changeonshow(i){
 	    for (let j in pxy.info){
 		pxy.info[j].onshow=i
 	    }
+	    this.SetThis();
 	},
 	currentrawname(){
 	    var nodeid=pxy.opts.active_popover_node;
@@ -681,6 +692,7 @@ export default {
 			    $g(i).style.width=d1.info[i].w1+"px"
 			    $g(i).style.height=d1.info[i].h1+"px"
 			}
+			pxy.WatchThis()
 			pxy.SetThis()			  
 		    }
 		)
@@ -836,10 +848,9 @@ export default {
 		}
 		//this.info[i].onshow=this.info[i][this.opts.onshow];
 		this.info[i].id=i;
-		if (!this.opts.onshow){
-		    this.opts.onshow='v'
+		if (!this.info[i].onshow){
+		    this.info[i].onshow='v'
 		}
-		
 	    };
 	},
 	WatchShowAdd(i){
@@ -893,7 +904,7 @@ export default {
 	    this.WatchThis();
 	    this.$nextTick(() => {this.SetThisBack(name);})
 	    return name
-	    //this.SetThis();
+
 	},
 	
 	AddSurNode(i){
@@ -1311,6 +1322,7 @@ export default {
 	},
 	
 	SetThis(){
+	    //await this.$nextTick();	    
 	    this.$nextTick(
 		() => {
 		    this.SetLayout('root');
@@ -1323,6 +1335,7 @@ export default {
 
 
 	SetThisBack(i){
+	    //await this.$nextTick();
 	    this.$nextTick(
 		() => {
 		    this.SetLayoutBack(i);
@@ -1340,6 +1353,7 @@ export default {
 	    var id=target.id
 	    //target.style.height = "auto";
 	    //target.style.height = ((target.scrollHeight)+4) + "px";
+	    $c("bfocus")	    	    
 	    $ah(target);
 
 	    this.NodePopoverHideOther();
@@ -1369,8 +1383,10 @@ export default {
 	    //pxy.opts.active_node=id;	    
 	},
 	OnBlur(event){
+
 	    var target=event.target;
 	    var id=target.id
+	    $c("blur")	    
 	    $ah(target);	      
 	    //target.style.height = "auto";
 	    //target.style.height = ((target.scrollHeight)+4) + "px";
@@ -1495,6 +1511,7 @@ export default {
 	      var id=target.id
 	      var h_old=target.style.height;
 	      var w_old=target.style.width;
+	      $c("fix")
 	      $ah(target);
 	      var h_new=target.style.height;
 	      var w_new=target.style.width;

@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import JsmView from '../views/JsmView.vue'
 import JsmViewTest from '../views/JsmViewTest.vue'
 import JsmViewTest1 from '../views/JsmViewTest1.vue'
+import JsmViewTest2 from '../views/JsmViewTest2.vue'
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
       path: '/jsmtest1',
       name: 'jsmtest1',
       component: JsmViewTest1
+  },
+  {
+      path: '/jsmtest2',
+      name: 'jsmtest2',
+      component: JsmViewTest2
   }
     
 ]
