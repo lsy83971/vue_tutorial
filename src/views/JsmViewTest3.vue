@@ -780,7 +780,7 @@ export default {
 			   this.info=d.info;
 			   this.struct=d.struct;
 			   this.opts=d.opts;
-			   //this.WatchThis();
+			   this.WatchThis();
 			   this.SetThis();
 		       }))
 	    //pxy.WatchThis()
@@ -810,6 +810,9 @@ export default {
 		pxy.info=d['info']
 		pxy.struct=d['struct']
 		pxy.opts=d['opts']
+		if (!pxy.opts.color_mode){
+		    pxy.opts.color_mode='code'
+		}
 		pxy.$nextTick(
 		    () => {
 			for (let i in pxy.info){
@@ -1757,6 +1760,18 @@ export default {
       border-width: 3px;
       
   }
+  .inputBoxblack{
+      border-color: black;
+      outline-color:black;
+      /* padding:0px;      */
+      padding-left:0px;
+      padding-right:0px;
+      padding-top:0px;
+      padding-bottom:0px;      
+      border-width: 3px;
+      
+  }
+  
   
   .inputBox{
       padding-left:0px;
