@@ -141,9 +141,9 @@
       <table class="table table-striped">  
 	<thead>
 	  <tr>
-            <th style='width:20%;text-align:left'>id</th>
-            <th style='width:20%;text-align:left'>name</th>
-            <th style='width:60%;text-align:left'>code</th>		  
+            <th style='width:10%;text-align:left'>id</th>
+            <th style='width:10%;text-align:left'>name</th>
+            <th style='width:80%;text-align:left'>code</th>		  
 	  </tr>
 	</thead>
 	<tbody>
@@ -165,10 +165,10 @@
   <table class="table table-striped">  
     <thead>
 	<tr>
-          <th style='width:20%;text-align:left'>id</th>
-          <th style='width:20%;text-align:left'>name</th>
+          <th style='width:10%;text-align:left'>id</th>
+          <th style='width:10%;text-align:left'>name</th>
           <th style='width:20%;text-align:left'>route</th>	  
-          <th style='width:40%;text-align:left'>result</th>		  
+          <th style='width:60%;text-align:left'>result</th>		  
 	</tr>
       </thead>
       <tbody>
@@ -197,10 +197,10 @@
     <table class="table table-striped">
       <thead>
 	<tr>
-          <th style='width:20%;text-align:left'>id</th>
-          <th style='width:20%;text-align:left'>name</th>
+          <th style='width:10%;text-align:left'>id</th>
+          <th style='width:10%;text-align:left'>name</th>
           <th style='width:20%;text-align:left'>route</th>	  
-          <th style='width:40%;text-align:left'>result</th>		  
+          <th style='width:60%;text-align:left'>result</th>		  
 	</tr>
       </thead>
       <tbody>
@@ -222,6 +222,7 @@
 
 
 // TODO: https://v5.bootcss.com/docs/content/tables/
+// TODO: fold result
 // TODO: Save Load cureent status
 // TODO: Show Total Result
 
@@ -783,15 +784,24 @@ export default {
 		    'struct':this.struct,
 		    'opts':this.opts}
 	},
-	RevertTree(){
+	RevertTree(){2
 	    utils.post("flask/revert",{},
 		       (response => {
-			   var d=response.data;
-			   this.info=d.info;
-			   this.struct=d.struct;
-			   this.opts=d.opts;
-			   this.WatchThis();
-			   this.SetThis();
+			   var d1=response.data;
+			   this.info=d1.info;
+			   this.struct=d1.struct;
+			   this.opts=d1.opts;
+			   if (!pxy.opts.color_mode){
+			       pxy.opts.color_mode='code'
+			   }
+			   pxy.$nextTick(() => {
+			       for (let i in pxy.info){
+				   $g(i).style.width=d1.info[i].w1+"px"
+				   $g(i).style.height=d1.info[i].h1+"px"
+			       }
+			       pxy.WatchThis()
+			       pxy.SetThis()			  
+			   })
 		       }))
 	    //pxy.WatchThis()
 	},
