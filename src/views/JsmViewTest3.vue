@@ -26,6 +26,8 @@
 	<button class="btn btn-primary" type="button" 
 		@click='RevertTree()'>revert</button>
 	<button class="btn btn-primary" type="button" 
+		@click='showcode()'>code</button>
+	<button class="btn btn-primary" type="button" 
 		@click='FlaskSendCode()'>sendcode</button>
 	<button class="btn btn-primary"
 		data-bs-toggle="collapse"
@@ -132,42 +134,36 @@
     </div>
   </div>
   <div id='tree_result' style='margin:3px;'>
-    <!-- table class="table">  
-      <colgroup>
-	<col width="30px" />
-	<col width="30px" />
-	<col width="60px" />
-	<col width="140px" />	
-      </colgroup>    
-      <thead>
-	<tr>
-          <th>id</th>
-          <th>name</th>
-          <th>route</th>
-          <th>result</th>		  
-	</tr>
-      </thead>
-      <tbody>
-	<template v-for='(nodes, idx) in node_res' :key="idx">
-	  <template
-	    style="text-align:left"
-	    class="node_res"
-	    v-for='(node, idx) in nodes'
-	    :key="idx" :node_res_id="node.id"
-	    >
+    <div v-if='opts.show_code'>
+      <h3 style='text-align:left'>code table:</h3>
+      <table class="table">  
+	<colgroup>
+	  <col width="30px" />
+	  <col width="30px" />
+	  <col width="200px" />	
+	</colgroup>    
+	<thead>
+	  <tr>
+            <th>id</th>
+            <th>name</th>
+            <th>code</th>		  
+	  </tr>
+	</thead>
+	<tbody>
+	  <template v-for='(node, idx) in info' :key="idx">
 	    <tr :class="nra_cls(node)">
 	      <td style='text-align:left'
 		  @click='ActiveOn(node.id,true)'
 		  >{{node.id}}</td>
-	      <td style='text-align:left'>{{node.name_abbr}}</td>	  
-	      <td style='text-align:left'>{{node.route}}</td>
-	      <td style='text-align:left'>{{node.data.b_data}}</td>	    	      
+	      <td style='text-align:left'>{{node.name}}</td>	  
+	      <td style='text-align:left'>{{node.v}}</td>
 	    </tr>
 	  </template>
-	</template>
-      </tbody>
-    </table -->
-
+	</tbody>
+      </table>
+    </div>
+    
+    <h3 style='text-align:left'>stack table:</h3>
     <table class="table">  
       <colgroup>
 	<col width="30px" />
@@ -204,7 +200,7 @@
       </tbody>
     </table>
 
-	    
+    <h3 style='text-align:left'>result table:</h3>
     <table class="table">
       <colgroup>
 	<col width="30px" />
@@ -235,14 +231,18 @@
     </table>
   </div>
 </template>  
-
 <script>
 
-// TODO: focus This fold suffix bug
-// TODO: Paste maintains width and height
-// TODO: lastnode can click on  
-// todo only surfix
-// node_element.clientHeight;
+
+// TODO: https://v5.bootcss.com/docs/content/tables/
+// TODO: Save Load cureent status
+// TODO: Show Total Result
+
+// Done: Show Total code
+// Done: focus This fold suffix bug
+// Done: Paste maintains width and height
+// Done: lastnode can click on  
+// Done: todo only surfix
 
 //      ³¤¿í:
 //      w[n] ±íÊ¾ÐÎ×´nµÄ¿í
@@ -435,8 +435,8 @@ export default {
 		'root': ['c_0'],
 		'c_0': [],
 	    },
-	    opts:{
-
+	    opts:{ // search
+		
 		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
@@ -451,6 +451,7 @@ export default {
 		"active_popover_node":0,
 		"active_result_node":0,
 		"popover":0,
+		"show_code":0,
 	    },
 	    isshow:{},
 	    //err_chd_cnt:null,
@@ -502,7 +503,7 @@ export default {
 	$g('jsm_canvas').style.left='0px'
 	$g('jsm_canvas').style.right='0px'
 	pxy = this;
-
+	
 	//editor = ace.edit("code_editor");
 	//editor.session.setMode("ace/mode/python");
     },
@@ -514,19 +515,22 @@ export default {
 	}
     },
     methods: {
+	showcode(){
+	    this.opts.show_code=1-this.opts.show_code
+	},
 	boxClass(idx){
 	    var o=new Object()
 	    o['readonly']=this.ActiveNodeIs(idx)
 	    o['onalive']=this.ActiveNodeIs(idx)
 	    o['inputBox'+this.info[idx].color]=true
 	    return o
-	   // return {
-	//	'readonly': ActiveNodeIs(idx),
-      	//	'onalive': ActiveNodeIs(idx),
-	//	('inputBox'+this.info[idx].color): true,
+	    // return {
+	    //	'readonly': ActiveNodeIs(idx),
+      	    //	'onalive': ActiveNodeIs(idx),
+	    //	('inputBox'+this.info[idx].color): true,
   	    //}
 	},
-
+	
 	CountErr(){
 	    pxy.err_cnt=new Object()
 	    for (let i in pxy.info){
@@ -704,13 +708,13 @@ export default {
 	
 	nra_cls(node){
 	    var d=new Object()
-	    d["active_res"]=(node.id==pxy.opts.active_result_node)
+	    d["active_res"]=(node.id==this.opts.active_result_node)
 	    d["res_node_"+node.id]=true
 	    return d
 	},
 	ra_cls(node){
 	    var d=new Object()
-	    d["active_res"]=(node.id==pxy.opts.active_result_node)
+	    d["active_res"]=(node.id==this.opts.active_result_node)
 	    d["res_"+node.id]=true
 	    return d
 	},
@@ -830,14 +834,14 @@ export default {
 		    pxy.opts.color_mode='code'
 		}
 		pxy.$nextTick(			    () => {
-		for (let i in pxy.info){
-			    $g(i).style.width=d1.info[i].w1+"px"
-			    $g(i).style.height=d1.info[i].h1+"px"
-			}
-			pxy.WatchThis()
-			pxy.SetThis()			  
-			    }
-	)
+		    for (let i in pxy.info){
+			$g(i).style.width=d1.info[i].w1+"px"
+			$g(i).style.height=d1.info[i].h1+"px"
+		    }
+		    pxy.WatchThis()
+		    pxy.SetThis()			  
+		}
+			     )
 	    }
 	    var text=utils.read(file_data,f)
 	},
@@ -1008,7 +1012,7 @@ export default {
 		if (!this.info[i].onshow){
 		    this.info[i].onshow='v'
 		}
-
+		
 		if (cm=="code"){
 		    if (this.nodeisnotcode(i)){
 			this.info[i].color="blue"
@@ -1028,7 +1032,7 @@ export default {
 			}
 			
 		    }
-
+		    
 		}
 		
 		
@@ -1087,7 +1091,7 @@ export default {
 		pxy.ShowNode(i)
 	    })
 	    return name
-
+	    
 	},
 	
 	AddSurNode(i){
@@ -1127,7 +1131,7 @@ export default {
 		    this.struct[p]=filtered
 		}
 	    }
-
+	    
 	    
 	    if (i in this.front){
 		p=this.front[i]
@@ -1148,7 +1152,7 @@ export default {
 		    
 		}
 	    )
-
+	    
 	},
 	HideNode(i){
 	    this.Get(i).show=0;
@@ -1186,14 +1190,14 @@ export default {
 	    this.SetThisBack(p);
 	    
 	},
-
+	
 	leftFocus(f){
 	    if (f!="root"){
 		var p=this.parent[f]
 		if (!!p){
 		    this.ActiveOn(p)		    
 		}
-
+		
 	    }
 	},
 	rightFocus(f){
@@ -1432,7 +1436,7 @@ export default {
 	    n.w3=n.w1+n.w2_add+n.w4_add
 	    n.h3=Math.max(n.h1,n.h2,n.h4)		
 	},
-
+	
 	SetLayoutBack(i){
 	    this.SetSize(i);
 	    var n=this.Get(i)
@@ -1454,8 +1458,8 @@ export default {
 		n.h2=h2
 		n.w2_add=w2+opts.hspace
 	    }
-
-
+	    
+	    
 	    if ((n.sur==0) || (n.show==0)){
 		n.h4=0;
 		n.w4=0;
@@ -1469,7 +1473,7 @@ export default {
 	    
 	    n.w3=n.w1+n.w2_add+n.w4_add
 	    n.h3=Math.max(n.h1,n.h2,n.h4)
-
+	    
 	    
 	    if (!!this.front[i]){
 		this.SetLayoutBack(this.front[i])
@@ -1542,7 +1546,7 @@ export default {
 		this.SetPositionX(i,x)
 		this.SetPositionY(i,y)
 	    }
-
+	    
 	    if (this.isshow[i]==1){
 		var c=this.GetChildren(i);
 		for (let j in c){
@@ -1554,13 +1558,13 @@ export default {
 	    }
 	    // TODO HARD MODE : SOFT MODE
 	    
-//	    var c=this.GetChildren(i);
-//	    for (let j in c){
-//		this.SetPosition(c[j])
-//	    }
-//	    if (n.sur!=0){
-//		this.SetPosition(n.sur)
-//	    }
+	    //	    var c=this.GetChildren(i);
+	    //	    for (let j in c){
+	    //		this.SetPosition(c[j])
+	    //	    }
+	    //	    if (n.sur!=0){
+	    //		this.SetPosition(n.sur)
+	    //	    }
             //node_element.style.left = (_offset.x + p.x) + 'px';
             //node_element.style.top = (_offset.y + p.y) + 'px';
 	},
@@ -1576,8 +1580,8 @@ export default {
 		}
 	    )
 	},
-
-
+	
+	
 	SetThisBack(i){
 	    //await this.$nextTick();
 	    this.$nextTick(
@@ -1598,22 +1602,22 @@ export default {
 	    //target.style.height = "auto";
 	    //target.style.height = ((target.scrollHeight)+4) + "px";
 	    $ah(target);
-
-//	    this.NodePopoverHideOther();
-//	    this.opts.active_popover_node=id;
-//	    delete(this.opts.popover);
-//	    const popover = new bootstrap.Popover(document.querySelector('#'+id), {
-//		container: 'body',
-//		title: 'Search',
-//		html: true,
-//		placement: 'bottom',
-//		trigger:'manual',
-//		sanitize: false,
-//		content() {
-//		    return document.querySelector('#PopoverContent').innerHTML;
-//		}
-//	    })
-//	    this.opts.popover=popover
+	    
+	    //	    this.NodePopoverHideOther();
+	    //	    this.opts.active_popover_node=id;
+	    //	    delete(this.opts.popover);
+	    //	    const popover = new bootstrap.Popover(document.querySelector('#'+id), {
+	    //		container: 'body',
+	    //		title: 'Search',
+	    //		html: true,
+	    //		placement: 'bottom',
+	    //		trigger:'manual',
+	    //		sanitize: false,
+	    //		content() {
+	    //		    return document.querySelector('#PopoverContent').innerHTML;
+	    //		}
+	    //	    })
+	    //	    this.opts.popover=popover
 	    //this.info[target.id].height=target.offsetHeight;
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
@@ -1621,7 +1625,7 @@ export default {
 	    pxy.opts.active_input_node=id;
 	    this.WatchActive();
 	    this.SetThisBack(id);
-
+	    
 	    //pxy.opts.active_node=id;	    
 	},
 	OnBlur(event){
@@ -1635,7 +1639,7 @@ export default {
 	    //this.info[target.id].width=target.offsetWidth;	
 	    //$c(this.info);
 	    //$c(typeof(this.info));
-
+	    
 	    this.SetThisBack(id);
 	    pxy.opts.active_node=0;
 	    pxy.opts.active_input_node=0;
@@ -1672,7 +1676,7 @@ export default {
 		//$c('goto default mode:');	    		
 		this.OnKeydownFixSize(event);
 	    }
-
+	    
 	},
 	OnKeydownActiveMode(event){
 	    var target=event.target;
@@ -1729,7 +1733,7 @@ export default {
 		    this.upFocus(id);
 		}
 		break;
-
+		
 	    case 37: //left
 		if (event.shiftKey){
 		    this.frontFocus(id)
@@ -1737,7 +1741,7 @@ export default {
 		    this.leftFocus(id);
 		}
 		break;
-
+		
 	    case 39: //right
 		if (event.shiftKey){
 		    this.surFocus(id);		    
@@ -1765,13 +1769,21 @@ export default {
 
 	    case 71: //G
 		//this.resOn(id);
-		this.$nextTick(() => {
-		      this.resOn(id)
-		      var target=$gc("res_node_"+id)[0]
-		      goto(target);
-		  })
-		  break;
-	      }
+		if (event.shiftKey){
+		    this.$nextTick(() => {
+			this.resOn(id)
+			var target=$gc("res_"+id)[0]
+			goto(target);
+		    })
+		}else{
+		    this.$nextTick(() => {
+			this.resOn(id)
+			var target=$gc("res_node_"+id)[0]
+			goto(target);
+		    })
+		}
+		break;
+	    }
 
 	  },
 	  OnKeydownFixSize(event){
