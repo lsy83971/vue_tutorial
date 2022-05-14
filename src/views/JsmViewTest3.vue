@@ -582,7 +582,7 @@ export default {
 	    //this.SetThisBack(i);
 	},
 	nodefoldfor(n){
-	    var c=this.GetDescendant(n)
+	    var c=this.GetDescendantSur(n)
 	    c=c.concat([n])
 	    for (let i in this.info){
 		if ($.inArray(i,c) == -1){
@@ -934,19 +934,19 @@ export default {
 	    var info=new Object();
 	    var struct=new Object();
 	    var namemap=new Object();
-	    for (let i in ns){
-		namemap[ns[i]]=this.GetNewnodeName();
-		var tmp_info=structuredClone(this.info[ns[i]])
-		var tmp_struct=structuredClone(this.struct[ns[i]])
-		info[namemap[ns[i]]]=tmp_info
-		struct[namemap[ns[i]]]=tmp_struct
+	    for (let j in ns){
+		namemap[ns[j]]=this.GetNewnodeName();
+		var tmp_info=structuredClone(this.info[ns[j]])
+		var tmp_struct=structuredClone(this.struct[ns[j]])
+		info[namemap[ns[j]]]=tmp_info
+		struct[namemap[ns[j]]]=tmp_struct
 	    }
-	    for (let i in info){
-		if (info[i]["sur"] != 0){
-		    info[i]["sur"]=namemap[info[i]["sur"]]
+	    for (let j in info){
+		if (info[j]["sur"] != 0){
+		    info[j]["sur"]=namemap[info[i]["sur"]]
 		}
-		var tmp_struct=struct[i].map(function(x){return namemap[x]})
-		struct[i]=tmp_struct
+		var tmp_struct=struct[j].map(function(x){return namemap[x]})
+		struct[j]=tmp_struct
 	    }
 	    return {"info":info,"struct":struct,"namemap":namemap,"root":i}
 	},
@@ -1248,7 +1248,7 @@ export default {
 	    var p=this.parent[f]
 	    var pl=this.struct[p]
 	    var index=pl.indexOf(f)
-	    zIndexDown(pl,index)
+	    zIndexDown(pl,index);
 	    this.WatchThis();
 	    this.SetThisBack(p);
 	},
@@ -1260,8 +1260,15 @@ export default {
 	    Object.assign(this.struct,cpinfo["struct"])
 	    Object.assign(this.info,cpinfo["info"])
 	    this.struct[t].push(cpinfo["namemap"][f]);
+	    var old_info=structuredClone(cpinfo["info"])
 	    this.WatchThis();
-	    this.$nextTick(() => {this.SetThis();})
+	    this.$nextTick(() => {
+		this.SetThis();
+		for (let k in old_info){
+		    $g(k).style.width=old_info[k].w1+"px"
+		    $g(k).style.height=old_info[k].h1+"px"
+		}
+	    })
 	},
 	contextNode(n){
 	    this.context={"node":n}
@@ -1686,7 +1693,7 @@ export default {
 	    case 9: // tab
 		var nodeid=this.ToggleNode(id);
 		break;
-	    case 70:
+	    case 70: // f
 		this.nodefoldfor(id);
 		break;
 		
