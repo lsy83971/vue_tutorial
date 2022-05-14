@@ -1,152 +1,149 @@
 <template>
-  <section>
-    <div id="PopoverContent" class="d-none">
-      <div class="input-group">
-        <input type="text"
-	       class="form-control"
-	       placeholder="Recipient's username"
-	       id='popoverinput'
-	       oninput='pxy.popovertoname(this.value)'
-	       >
-      </div>
-    </div>
-  </section>
-  <div style='overflow:auto'>  
-    <div style='float:left'>
-      <p style='margin-bottom:3px'>
-	<button class="btn btn-primary"
-		data-bs-toggle="collapse"
-		href="#multiCollapseExample1"
-		role="button"	    
-		>Save Load</button>
-	<button class="btn btn-primary" type="button"	      
-		@click='FlaskSendTree()'>Run</button>
-	<button class="btn btn-primary" type="button"	      
-		@click='FlaskClearTree()'>clear</button>
-	<button class="btn btn-primary" type="button" 
-		@click='RevertTree()'>revert</button>
-	<button class="btn btn-primary" type="button" 
-		@click='showcode()'>code</button>
-	<button class="btn btn-primary" type="button" 
-		@click='FlaskSendCode()'>sendcode</button>
-	<button class="btn btn-primary"
-		data-bs-toggle="collapse"
-		href="#multiCollapseExample2"
-		role="button"	    
-		>Editor</button>
-      </p>
-    </div>
-  </div>      
-  <div class="row">
-    <div class="collapse multi-collapse" id="multiCollapseExample1"
-	 style='height:fit-content;padding:5px;width:90%'
-	 tabindex="-1"
-	 aria-labelledby="offcanvasScrollingLabel">
-      
-      <div class="input-group mb-2">
-	<input id='saver_filename'
-	       type="text" class="form-control"
-	       placeholder="Recipient's username"
-	       aria-label="Recipient's username"
-	       aria-describedby="button-addon2"	   
-	       />
-	<button @click='IOSave()'>saveJSM</button>
-      </div>
-      
-      <div class="input-group mb-2">
-	<input class='form-control'
-      	       id='loader_filename' type="file"
-	       />
-	<button @click='IOLoad()'>loadJSM</button>    
-      </div>
-      
-      <div class="input-group mb-3">
-	<input class='form-control'
-      	       id='json_loader_filename' type="file"
-	       />
-	<button @click='FlaskLoadjson()'>loadJson</button>
-	
-      </div>
-    </div>
-    <div class="collapse multi-collapse" id="multiCollapseExample2">
-      <div style='overflow:auto;float:left'>
-	<div id="code_editor" class="input"
-	     style='height:300px'
+<section>
+  <div id="PopoverContent" class="d-none">
+    <div class="input-group">
+      <input type="text"
+	     class="form-control"
+	     placeholder="Recipient's username"
+	     id='popoverinput'
+	     oninput='pxy.popovertoname(this.value)'
 	     >
-	</div>
-      </div>
+    </div>
+  </div>
+</section>
+<div style='overflow:auto'>  
+  <div style='float:left'>
+    <p style='margin-bottom:3px'>
+      <button class="btn btn-primary"
+	      data-bs-toggle="collapse"
+	      href="#multiCollapseExample1"
+	      role="button"	    
+	      >Save Load</button>
+      <button class="btn btn-primary" type="button"	      
+	      @click='FlaskSendTree()'>Run</button>
+      <button class="btn btn-primary" type="button"	      
+	      @click='FlaskClearTree()'>clear</button>
+      <button class="btn btn-primary" type="button" 
+	      @click='RevertTree()'>revert</button>
+      <button class="btn btn-primary" type="button" 
+	      @click='showcode()'>code</button>
+      <button class="btn btn-primary" type="button" 
+	      @click='FlaskSendCode()'>sendcode</button>
+      <button class="btn btn-primary"
+	      data-bs-toggle="collapse"
+	      href="#multiCollapseExample2"
+	      role="button"	    
+	      >Editor</button>
+    </p>
+  </div>
+</div>      
+<div class="row">
+  <div class="collapse multi-collapse" id="multiCollapseExample1"
+       style='height:fit-content;padding:5px;width:90%'
+       tabindex="-1"
+       aria-labelledby="offcanvasScrollingLabel">
+    
+    <div class="input-group mb-2">
+      <input id='saver_filename'
+	     type="text" class="form-control"
+	     placeholder="Recipient's username"
+	     aria-label="Recipient's username"
+	     aria-describedby="button-addon2"	   
+	     />
+      <button @click='IOSave()'>saveJSM</button>
+    </div>
+    
+    <div class="input-group mb-2">
+      <input class='form-control'
+      	     id='loader_filename' type="file"
+	     />
+      <button @click='IOLoad()'>loadJSM</button>    
+    </div>
+    
+    <div class="input-group mb-3">
+      <input class='form-control'
+      	     id='json_loader_filename' type="file"
+	     />
+      <button @click='FlaskLoadjson()'>loadJson</button>
       
-      <div style='height:306px;float:left;margin-left:5px'>	
-	<textarea id="code_result"
-		  v-model='code_res'
-		  style='height:300px;resize:none'
-		  >
-	</textarea>
+    </div>
+  </div>
+  <div class="collapse multi-collapse" id="multiCollapseExample2">
+    <div style='overflow:auto;float:left'>
+      <div id="code_editor" class="input"
+	   style='height:300px'
+	   >
       </div>
     </div>
-  </div>
-  
-  <nav aria-label="breadcrumb"
-       style='padding:5px;padding-left:10px;height:30px'>
-    <ol class="breadcrumb"> 
-      <li class="breadcrumb-item">GL:</li>
-      <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
-      <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
-      <li class="breadcrumb-item"><a @click="changeonshow('rawname')">NAME</a></li>
-      <li class="breadcrumb-item">N:</li>
-      <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">CODE</a></li>
-      <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
-      <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">NAME</a></li>
-      <li class="breadcrumb-item"><a @click="ActiveOn(context.node)">CTX: {{context.node}}</a></li>
-      <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">FOCUS: {{anodeInfo()}}</a></li>
-      <li class="breadcrumb-item">ERR: {{nodeiserr()}}</li>
-      <li class="breadcrumb-item">ERRSUB: {{chderr()}}</li>
-      <li class="breadcrumb-item">ERR-T: {{totalerr()}}</li>
-      <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
-      <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
-      <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
-      <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
-    </ol>
-  </nav>
-  <div id='jsm_outer'
-       style="width:99%;height:calc(95vh - 160px);
-      	      border-style:solid;
-      	      margin:5px
-      	      ">
-    <div id='jsm_inner' style="overflow: auto;position: relative;width: 100%;height: 100%;">
-      <canvas id='jsm_canvas' style='position:absolute' z-index='1' />    	
-      <template  v-for='(node, idx) in info' :key="idx">
-	<textarea
-      	  style="height:30px;width:180px;z-index:auto;resize:both"
-      	  @focus='OnFocus($event)'
-      	  @blur='OnBlur($event)'
-      	  @keydown='OnKeydown($event)'
-      	  v-model='node[node.onshow]'
-      	  :id='idx'
-      	  :class="boxClass(idx)">
-
-	</textarea>
-	
-	<span class='dot'
-	      @click='OnClickExpander($event)'        
-	      :id="'e_'+idx"></span>
-      </template>
+    
+    <div style='height:306px;float:left;margin-left:5px'>	
+      <textarea id="code_result"
+		v-model='code_res'
+		style='height:300px;resize:none'
+		>
+      </textarea>
     </div>
   </div>
-  <div id='tree_result' style='margin:3px;'>
-    <div v-if='opts.show_code'>
-      <h3 style='text-align:left'>code table:</h3>
-      <table class="table">  
-	<colgroup>
-	  <col width="30px" />
-	  <col width="30px" />
-	  <col width="200px" />	
-	</colgroup>    
+</div>
+
+<nav aria-label="breadcrumb"
+     style='padding:5px;padding-left:10px;height:30px'>
+  <ol class="breadcrumb"> 
+    <li class="breadcrumb-item">GL:</li>
+    <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
+    <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
+    <li class="breadcrumb-item"><a @click="changeonshow('rawname')">NAME</a></li>
+    <li class="breadcrumb-item">N:</li>
+    <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">CODE</a></li>
+    <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
+    <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">NAME</a></li>
+    <li class="breadcrumb-item"><a @click="ActiveOn(context.node)">CTX: {{context.node}}</a></li>
+    <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">FOCUS: {{anodeInfo()}}</a></li>
+    <li class="breadcrumb-item">ERR: {{nodeiserr()}}</li>
+    <li class="breadcrumb-item">ERRSUB: {{chderr()}}</li>
+    <li class="breadcrumb-item">ERR-T: {{totalerr()}}</li>
+    <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
+    <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
+    <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
+    <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
+  </ol>
+</nav>
+<div id='jsm_outer'
+     style="width:99%;height:calc(95vh - 160px);
+      	    border-style:solid;
+      	    margin:5px
+      	    ">
+  <div id='jsm_inner' style="overflow: auto;position: relative;width: 100%;height: 100%;">
+    <canvas id='jsm_canvas' style='position:absolute' z-index='1' />    	
+    <template  v-for='(node, idx) in info' :key="idx">
+      <textarea
+      	style="height:30px;width:180px;z-index:auto;resize:both"
+      	@focus='OnFocus($event)'
+      	@blur='OnBlur($event)'
+      	@keydown='OnKeydown($event)'
+      	v-model='node[node.onshow]'
+      	:id='idx'
+      	:class="boxClass(idx)">
+	
+      </textarea>
+      
+      <span class='dot'
+	    @click='OnClickExpander($event)'        
+	    :id="'e_'+idx"></span>
+    </template>
+  </div>
+</div>
+
+<div style='margin:5px'>
+  <div v-if='opts.show_code'>
+    <h3 style='text-align:left'>code table:</h3>
+    <div id='tree_result' style='margin:3px;'>      
+      <table class="table table-striped">  
 	<thead>
 	  <tr>
-            <th>id</th>
-            <th>name</th>
-            <th>code</th>		  
+            <th style='width:20%;text-align:left'>id</th>
+            <th style='width:20%;text-align:left'>name</th>
+            <th style='width:60%;text-align:left'>code</th>		  
 	  </tr>
 	</thead>
 	<tbody>
@@ -162,21 +159,16 @@
 	</tbody>
       </table>
     </div>
-    
-    <h3 style='text-align:left'>stack table:</h3>
-    <table class="table">  
-      <colgroup>
-	<col width="30px" />
-	<col width="30px" />
-	<col width="60px" />
-	<col width="140px" />	
-      </colgroup>    
-      <thead>
+  </div>
+
+  <h3 style='text-align:left'>stack table:</h3>
+  <table class="table table-striped">  
+    <thead>
 	<tr>
-          <th>id</th>
-          <th>name</th>
-          <th>route</th>
-          <th>result</th>		  
+          <th style='width:20%;text-align:left'>id</th>
+          <th style='width:20%;text-align:left'>name</th>
+          <th style='width:20%;text-align:left'>route</th>	  
+          <th style='width:40%;text-align:left'>result</th>		  
 	</tr>
       </thead>
       <tbody>
@@ -198,22 +190,17 @@
 	  </template>
 	</template>
       </tbody>
-    </table>
+  </table>
+
 
     <h3 style='text-align:left'>result table:</h3>
-    <table class="table">
-      <colgroup>
-	<col width="30px" />
-	<col width="30px" />
-	<col width="60px" />
-	<col width="140px" />	
-      </colgroup>    
+    <table class="table table-striped">
       <thead>
 	<tr>
-          <th>id</th>
-          <th>name</th>
-          <th>route</th>
-          <th>result</th>		  
+          <th style='width:20%;text-align:left'>id</th>
+          <th style='width:20%;text-align:left'>name</th>
+          <th style='width:20%;text-align:left'>route</th>	  
+          <th style='width:40%;text-align:left'>result</th>		  
 	</tr>
       </thead>
       <tbody>
@@ -708,13 +695,16 @@ export default {
 	
 	nra_cls(node){
 	    var d=new Object()
-	    d["active_res"]=(node.id==this.opts.active_result_node)
+	    //d["active_res"]=(node.id==this.opts.active_result_node)
+	    d["table-danger"]=(node.id==this.opts.active_result_node)
+	    
 	    d["res_node_"+node.id]=true
 	    return d
 	},
 	ra_cls(node){
 	    var d=new Object()
-	    d["active_res"]=(node.id==this.opts.active_result_node)
+	    //d["active_res"]=(node.id==this.opts.active_result_node)
+	    d["table-danger"]=(node.id==this.opts.active_result_node)	    
 	    d["res_"+node.id]=true
 	    return d
 	},
@@ -1773,13 +1763,17 @@ export default {
 		    this.$nextTick(() => {
 			this.resOn(id)
 			var target=$gc("res_"+id)[0]
-			goto(target);
+			if (target){
+			    goto(target);			    
+			}
 		    })
 		}else{
 		    this.$nextTick(() => {
 			this.resOn(id)
 			var target=$gc("res_node_"+id)[0]
-			goto(target);
+			if (target){
+			    goto(target);			    
+			}
 		    })
 		}
 		break;
