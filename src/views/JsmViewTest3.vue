@@ -1104,7 +1104,10 @@ export default {
 	    this.struct[name]=[];
 	    this.info[name]=structuredClone(opts.node)
 	    this.WatchThis();
-	    this.$nextTick(() => {this.SetThisBack(name);})
+	    this.$nextTick(() => {
+		this.SetThisBack(name);
+		pxy.ShowNode(i)		
+	    })
 	},
 	
 	DropNode(i){
