@@ -87,27 +87,25 @@
   <nav aria-label="breadcrumb"
        style='padding:5px;padding-left:10px;height:30px'>
     <ol class="breadcrumb"> 
-      <li class="breadcrumb-item">GLOBAL:</li>      
-      <li class="breadcrumb-item"><a @click="changeonshow('v')">code</a></li>
+      <li class="breadcrumb-item">GL:</li>
+      <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
       <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
-      <li class="breadcrumb-item"><a @click="changeonshow('rawname')">name</a></li>
-      <li class="breadcrumb-item">NODE:</li>            
-      <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">code</a></li>
+      <li class="breadcrumb-item"><a @click="changeonshow('rawname')">NAME</a></li>
+      <li class="breadcrumb-item">N:</li>
+      <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">CODE</a></li>
       <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
-      <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">name</a></li>
-      
-      <li class="breadcrumb-item">context: {{context.node}}</li>
-      <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">focusNode: {{anodeInfo()}}</a></li>
-      <li class="breadcrumb-item">Err: {{nodeiserr()}}</li>
-      <li class="breadcrumb-item">ErrChd: {{chderr()}}</li>      
-      <li class="breadcrumb-item">Errs: {{totalerr()}}</li>
+      <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">NAME</a></li>
+      <li class="breadcrumb-item"><a @click="ActiveOn(context.node)">CTX: {{context.node}}</a></li>
+      <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">FOCUS: {{anodeInfo()}}</a></li>
+      <li class="breadcrumb-item">ERR: {{nodeiserr()}}</li>
+      <li class="breadcrumb-item">ERRSUB: {{chderr()}}</li>
+      <li class="breadcrumb-item">ERR-T: {{totalerr()}}</li>
       <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
       <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
       <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
       <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
     </ol>
   </nav>
-  
   <div id='jsm_outer'
        style="width:99%;height:calc(95vh - 160px);
       	      border-style:solid;
@@ -509,8 +507,8 @@ export default {
 	//editor.session.setMode("ace/mode/python");
     },
     updated() {
+	
 	if (this.opts.isalive == 1){
-	    //$c("UPDATE")
   	    this.WatchThis();
   	    //this.SetThis();	    
 	}
@@ -831,16 +829,15 @@ export default {
 		if (!pxy.opts.color_mode){
 		    pxy.opts.color_mode='code'
 		}
-		pxy.$nextTick(
-		    () => {
-			for (let i in pxy.info){
+		pxy.$nextTick(			    () => {
+		for (let i in pxy.info){
 			    $g(i).style.width=d1.info[i].w1+"px"
 			    $g(i).style.height=d1.info[i].h1+"px"
 			}
 			pxy.WatchThis()
 			pxy.SetThis()			  
-		    }
-		)
+			    }
+	)
 	    }
 	    var text=utils.read(file_data,f)
 	},
@@ -862,6 +859,9 @@ export default {
 	    if (i==0){
 		return
 	    }
+	    if (!$g(i)){
+		return
+	    }
 	    if (shownode){
 		this.ShowNodeRecur(i);
 		this.WatchThis();
@@ -870,9 +870,6 @@ export default {
 	    $g(i).focus()
 	    this.opts.active_node=i
 	    this.opts.active_input_node=0
-
-
-	    
 	},
 	ActiveOff(i){
 	    this.opts.active_node=0
@@ -1081,12 +1078,14 @@ export default {
 	    if (!name){
 		name=this.GetNewnodeName();
 	    }
-	    this.ShowNode(i)
 	    this.struct[i].push(name);
 	    this.struct[name]=[];
 	    this.info[name]=structuredClone(opts.node)
 	    this.WatchThis();
-	    this.$nextTick(() => {this.SetThisBack(name);})
+	    this.$nextTick(() => {
+		pxy.SetThisBack(name);
+		pxy.ShowNode(i)
+	    })
 	    return name
 
 	},
@@ -1626,7 +1625,6 @@ export default {
 	    //pxy.opts.active_node=id;	    
 	},
 	OnBlur(event){
-
 	    var target=event.target;
 	    var id=target.id
 	    //$c("blur")
@@ -1784,7 +1782,6 @@ export default {
 	      $ah(target);
 	      var h_new=target.style.height;
 	      var w_new=target.style.width;
-	      
 	      if (h_old != h_new){
 		  this.SetThisBack(id)
 		  return
