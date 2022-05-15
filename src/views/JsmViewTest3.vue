@@ -281,10 +281,11 @@ var $gc = function (id) { return $d.getElementsByClassName(id); };
 var $ah = function (target) {
     var lines=target.value.split("\n");
     if (lines.length<=1){
-	target.style.height = 30+'px'
+	//target.style.height = 30+'px'
+	target.style.height = 26+'px'
     }else{
 	target.style.height = "auto";
-	target.style.height = (target.scrollHeight+6) + "px";
+	target.style.height = (target.scrollHeight+7) + "px";
     }
 }
 var $c = console.log;
@@ -492,8 +493,13 @@ export default {
 	$g('jsm_canvas').style.right='0px'
 	pxy = this;
 	
-	//editor = ace.edit("code_editor");
-	//editor.session.setMode("ace/mode/python");
+	editor = ace.edit("code_editor");
+	//editor.setTheme("ace/theme/monokai");	
+	editor.session.setMode("ace/mode/python");
+	editor.setOptions({
+	    fontFamily: "Courier New",
+	    fontSize: "10pt"
+	});	
     },
     updated() {
 	
@@ -511,6 +517,7 @@ export default {
 	    o['readonly']=this.ActiveNodeIs(idx)
 	    o['onalive']=this.ActiveNodeIs(idx)
 	    o['inputBox'+this.info[idx].color]=true
+	    o['inputBox']=true
 	    return o
 	    // return {
 	    //	'readonly': ActiveNodeIs(idx),
@@ -1326,8 +1333,10 @@ export default {
 	    this.info[i].h1=$g(i).offsetHeight;
 	},
 	
-	SetLine(x1,y1,x2,y2,dash=false){
-	    var ctx=$g('jsm_canvas').getContext('2d');		    
+	SetLineEnd(x1,y1,x2,y2,dash=false){
+	    var ctx=$g('jsm_canvas').getContext('2d');
+	    //ctx.globalAlpha = 1;
+	    //ctx.globalCompositeOperation="hue"
 	    ctx.beginPath();
 	    x1=x1+this.opts.offset_x
 	    x2=x2+this.opts.offset_x	    
@@ -1339,13 +1348,44 @@ export default {
 	    }else{
 		ctx.setLineDash([]);		
 	    }
-	    ctx.moveTo(x1,y1)
-	    ctx.lineTo((x1+x2)/2,y1)
-	    ctx.lineTo((x1+x2)/2,y2)
-	    ctx.lineTo(x2,y2)	    	    
+	    ctx.strokeStyle = '#000000';
+	    ctx.lineCap = 'butt';
+	    // ctx.moveTo(x1,y1)
+	    // ctx.lineTo((x1+x2)/2,y1)
+	    // ctx.lineTo((x1+x2)/2,y2)
+	    // ctx.lineTo(x2,y2)
+	    
+	    ctx.moveTo((x1+x2)/2,y2)	    
+	    ctx.lineTo(x2,y2)
 	    ctx.stroke();
 	    
 	},
+
+	SetLine(x1,y1,x2,y2,dash=false){
+	    var ctx=$g('jsm_canvas').getContext('2d');
+	    //ctx.globalAlpha = 1;
+	    //ctx.globalCompositeOperation="hue"
+	    ctx.beginPath();
+	    x1=x1+this.opts.offset_x
+	    x2=x2+this.opts.offset_x	    
+	    y1=y1+this.opts.offset_y
+	    y2=y2+this.opts.offset_y
+	    
+	    if (dash==true){
+		ctx.setLineDash([0.5,1]);
+	    }else{
+		ctx.setLineDash([]);		
+	    }
+	    ctx.strokeStyle = '#000000';
+	    ctx.lineCap = 'square';
+	    ctx.moveTo(x1,y1)
+	    ctx.lineTo((x1+x2)/2,y1)
+	    ctx.lineTo((x1+x2)/2,y2)
+	    ctx.lineTo(x2,y2)
+	    ctx.stroke();
+	    
+	},
+	
 	
 	SetCanvasClear(){
 	    var ctx=$g('jsm_canvas').getContext('2d');
@@ -1364,14 +1404,49 @@ export default {
 	    //$c("CANVAS CLEAR");
 	    for (let i in this.info){
 		if (this.isshowchildren[i]){
-		    for (let j in this.struct[i]){
-			var o1=this.Get(i);
-			var o2=this.Get(this.struct[i][j]);
-			var x1=o1.x2+opts.expandsize
-			var y1=o1.y0
-			var x2=o2.x6
-			var y2=o2.y0
-			this.SetLine(x1,y1,x2,y2,false);
+		    var c=this.struct[i]
+		    var c0=this.Get(i)  
+		    if (c.length>0){
+			$c("GGG");
+			var ctx=$g('jsm_canvas').getContext('2d');			    
+			ctx.beginPath();
+			ctx.setLineDash([]);
+			ctx.strokeStyle = '#000000';
+
+			var c1=this.Get(c[0])
+			var c2=this.Get(c[c.length-1])
+
+			var y0=c0.y0
+			var y1=c1.y0
+			var y2=c2.y0
+			var x1=c0.x2+opts.expandsize
+			var x2=c1.x6
+
+			x1=x1+this.opts.offset_x
+			x2=x2+this.opts.offset_x
+
+			y0=y0+this.opts.offset_y
+			y1=y1+this.opts.offset_y
+			y2=y2+this.opts.offset_y
+			ctx.lineCap = 'square';
+			ctx.moveTo((x1+x2)/2,y1)
+			ctx.lineTo((x1+x2)/2,y2)
+			ctx.stroke();
+			ctx.lineCap = 'butt';
+			ctx.moveTo(x1,y0)
+			ctx.lineTo((x1+x2)/2,y0)
+			ctx.stroke();			
+			
+			for (let j in this.struct[i]){
+			    var o1=c0
+			    var o2=this.Get(this.struct[i][j]);
+			    var x1=o1.x2+opts.expandsize
+			    var y1=o1.y0
+			    var x2=o2.x6
+			    var y2=o2.y0
+			    this.SetLineEnd(x1,y1,x2,y2,false);
+			}
+			
 		    }
 		    
 		}
@@ -1949,4 +2024,17 @@ body{
     overflow:hidden;
     padding-right: calc(100vw - 100%);
 }
+
+
+.inputBox{
+    font-family: "Courier New", Courier, monospace;
+    font-size: small;
+}
+
+#code_result{
+    font-family: "Courier New", Courier, monospace;
+    font-size: small;
+}
+
+
 </style>
