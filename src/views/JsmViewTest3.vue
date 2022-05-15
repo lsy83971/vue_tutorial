@@ -1407,7 +1407,6 @@ export default {
 		    var c=this.struct[i]
 		    var c0=this.Get(i)  
 		    if (c.length>0){
-			$c("GGG");
 			var ctx=$g('jsm_canvas').getContext('2d');			    
 			ctx.beginPath();
 			ctx.setLineDash([]);
