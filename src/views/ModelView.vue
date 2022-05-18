@@ -11,31 +11,38 @@
     </select>
   </template>
 </div>
-
-<div>
-
-  <table
-    v-if="!!new_render.data"
-    class="table table-striped">  
+<div style='margin:10px;padding:10px'>
+  <template v-for='(tbl, idx) in stacks' :key="idx">  
+    <div style='overflow:auto;
+		margin:5px;
+		border: solid;
+		border-width: 1px;
+		border-top-left-radius: .25rem;
+		border-top-right-radius: .25rem;
+		'>
+      <table
+	class="table table-striped">  
 	<thead>
 	  <tr>
 	    <th
-	      v-for='(c,idx) in new_render.cols'
+	      v-for='(c,idx) in tbl.col'
 	      :key='idx'
 	      style='width:10%;text-align:left'>{{c}}</th>
 	  </tr>
 	</thead>
 	<tbody>
-	  <template v-for='(nodes, idx) in new_render.itm' :key="idx">
+	  <template v-for='(nodes, idx) in tbl.data' :key="idx">
 	    <tr>
 	      <td v-for='(node, idx) in nodes' :key='idx'
-		>{{node}}</td>
+		  >{{node}}</td>
 	    </tr>
 	  </template>
 	</tbody>
       </table>
-
-  
+      
+      
+    </div>
+  </template>
 </div>
 </template>
 
@@ -127,8 +134,12 @@ var utils= {
 export default {
     data () {
 	return {
+	    stacks:[],
 	    new_render:{
 		data:null,
+	    },
+	    opts:{
+		cNO:1
 	    },
 	    info:[
 		{
@@ -171,6 +182,11 @@ export default {
     },
     
     methods:{
+	NewNodeName(){
+	    var name='c_'+this.opts.cNO;
+	    this.opts.cNO++;
+	    return name
+	},
 	ParseNewRender(){
 	    var d=this.new_render.data
 	    var its=Object.keys(d)
@@ -215,8 +231,10 @@ export default {
 		s["o"]=this.info
 		utils.post('model/render',s,(response => {
 		    $c(response.data);
-		    this.new_render.data=response.data
-		    this.ParseNewRender()
+		    this.new_render.data=JSON.parse(response.data.data);
+		    this.new_render.col=response.data.col
+		    var nodeid=this.NewNodeName()
+		    this.stacks[nodeid]=this.new_render;
 		}))
 	    }catch(err){
 

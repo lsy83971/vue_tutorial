@@ -41,7 +41,7 @@ def sx(x):
 def ak(x):
     return x[tkey]["AUC_KS"]
 
-MODEL_PATH = "/home/lsy/vue_tutorial/flask/models/"
+MODEL_PATH = "./models/"
 def get_models():
     models = os.listdir(MODEL_PATH)
     models = [i for i in models if ".pkl" in i]
@@ -354,8 +354,24 @@ def select():
 def render():
     data = json.loads(request.data)
     df = rt.render(data["o"])
-    print(df)
-    return df.T.to_json()
+    print(df["label"])
+    return parsedf(minimize(df))
+
+def minimize(df):
+    if "feature" in df:
+        df = df[df["feature"] == "score"]
+        del df["feature"]
+    if "label" in df:
+        df = df[df["label"] == "odhis30_first"]
+        del df["label"]
+    if "index" in df:
+        del df["index"]
+    return df
+
+def parsedf(df):
+    _c = df.columns.astype(str).tolist()
+    _d = df.to_json(orient='values')
+    return json.dumps({"col": _c, "data": _d})
 
 app.add_url_rule("/model/select", "select", select, methods=["GET", "POST"])
 app.add_url_rule("/model/render", "render", render, methods=["GET", "POST"])
