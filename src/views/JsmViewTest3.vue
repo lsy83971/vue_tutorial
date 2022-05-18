@@ -174,11 +174,8 @@
       <tbody>
 	<template v-for='(nodes, idx) in noderesult' :key="idx">
 	  <template
-	    style="text-align:left"
-	    class="node_res"
 	    v-for='(node, idx) in nodes'
-	    :key="idx" :node_res_id="node.id"
-	    >
+	    :key="idx">
 	    <tr :class="nra_cls(node)">
 	      <td style='text-align:left'
 		  @click='ActiveOn(node.id,true)'
@@ -908,7 +905,7 @@ export default {
 		var des= this.struct[i]
 	    }else{
 		var des=[]
-	    };
+	    }
 	    var n=this.Get(i);	    
 	    if (n.sur !=0){
 		des=des.concat([n.sur])		  
@@ -1041,9 +1038,7 @@ export default {
 		    }
 		    
 		}
-		
-		
-	    };
+	    }
 	},
 	WatchShowAdd(i){
 	    this.isshow[i]=1;

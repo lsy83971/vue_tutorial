@@ -86,5 +86,10 @@ mp.d[tkey]. keys()
 mp.d[tkey]["AUC_KS"]. keys()
 mp.d[tkey]["授信"]. keys()
 
-pd.DataFrame([[1, 2], [3, 4]]).T.to_dict()
+sb = pd.DataFrame([[1, 2], [3, 4]]).T.to_dict()
+
+
+sb
+
+list(yx(mp.d).values())[0]. head(1).T
 pd.DataFrame([[1, 2], [3, 4]])

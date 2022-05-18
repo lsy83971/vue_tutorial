@@ -1,10 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import JsmView from '../views/JsmView.vue'
-import JsmViewTest from '../views/JsmViewTest.vue'
-import JsmViewTest1 from '../views/JsmViewTest1.vue'
-import JsmViewTest2 from '../views/JsmViewTest2.vue'
 import JsmViewTest3 from '../views/JsmViewTest3.vue'
+import ModelView from '../views/ModelView.vue'
 
 const routes = [
   {
@@ -21,32 +18,15 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
-      path: '/jsmtest',
-      name: 'jsm',
-      component: JsmView
-  },
-  {
-      path: '/jsm',
-      name: 'jsmtest',
-      component: JsmViewTest
-  },
-  {
-      path: '/jsmtest1',
-      name: 'jsmtest1',
-      component: JsmViewTest1
-  },
-  {
-      path: '/jsmtest2',
-      name: 'jsmtest2',
-      component: JsmViewTest2
-  },
-  {
       path: '/jsmtest3',
       name: 'jsmtest3',
       component: JsmViewTest3
+  },
+  {
+      path: '/models',
+      name: 'models',
+      component: ModelView
   }
-    
-    
 ]
 
 const router = createRouter({

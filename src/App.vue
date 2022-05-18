@@ -2,7 +2,8 @@
   <nav>
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link> |
-    <router-link to="/jsmtest3">Jsm</router-link>    
+    <router-link to="/jsmtest3">Jsm</router-link> |
+    <router-link to="/models">Models</router-link>        
   </nav>
   <router-view/>
 </template>
