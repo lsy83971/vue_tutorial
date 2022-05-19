@@ -1,4 +1,5 @@
 import pandas as pd
+
 import json
 from 
 sb = pd.DataFrame([["a", 0.000003], ["c", "d"]])
@@ -31,3 +32,7 @@ pd.DataFrame([[1, 2], [3, 4]])
 =======
 sb
 >>>>>>> b8e222be4e5dad692a0655320accbe7acb620f0c
+
+
+str(0.0000001)
+repr(0.0000001)

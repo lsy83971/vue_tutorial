@@ -394,7 +394,10 @@ def minimize(df):
 def parsedf(df):
     print(df)
     _c = df.columns.astype(str).tolist()
-    _d = df.to_json(orient='values')
+    df = df.applymap(lambda x:np.format_float_positional(round(x, 4)) \
+                     if pd.api.types.is_float(x) \
+                     else x)
+    _d = df.astype(str).to_json(orient='values')
     return json.dumps({"col": _c, "data": _d})
 
 app.add_url_rule("/model/select", "select", select, methods=["GET", "POST"])
