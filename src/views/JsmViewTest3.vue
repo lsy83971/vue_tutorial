@@ -11,7 +11,7 @@
     </div>
   </div>
 </section>
-<div style='overflow:auto'>  
+<div style='overflow:auto;margin-left:5px'>  
   <div style='float:left'>
     <p style='margin-bottom:3px'>
       <button class="btn btn-primary"
@@ -70,17 +70,13 @@
   </div>
   <div class="collapse multi-collapse" id="multiCollapseExample2">
     <div style='overflow:auto;float:left'>
-      <div id="code_editor" class="input"
-	   style='height:300px;'
-	   >
+      <div id="code_editor" class="input">
       </div>
     </div>
     
     <div style='height:306px;float:left;margin-left:5px'>	
       <textarea id="code_result"
-		v-model='code_res'
-		style='height:300px;resize:none'
-		>
+		v-model='code_res'>
       </textarea>
     </div>
   </div>
@@ -2025,9 +2021,30 @@ body{
     font-size: small;
 }
 
+#code_editor{
+    /* margin: 4px; */
+    /* float:left; */
+    text-align:left;
+    width:500px;
+    height:450px;
+    border-style:solid;
+    height:300px;
+    margin-left:5px;
+}
+
 #code_result{
+    /* margin: 4px; */
+    /* float:left; */
+    text-align:left;
+    width:500px;
+    height:432px;
+    border-style:solid;        
+    margin-top:0px;
     font-family: "Courier New", Courier, monospace;
     font-size: small;
+    height:300px;
+    resize:none;
+    margin-left:5px;
 }
 
 
