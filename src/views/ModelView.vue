@@ -1,5 +1,6 @@
 <template>
 <div>
+  
   <template v-for='(node, idx) in info' :key='idx'>
     <select
       @change='Onselect($event)'
@@ -12,8 +13,16 @@
   </template>
 </div>
 <div style='margin:10px;padding:10px'>
-  <template v-for='(tbl, idx) in stacks' :key="idx">  
-    <div style='overflow:auto;
+  <template v-for='(tbl, idx) in stacks' :key="idx">
+    <nav aria-label="breadcrumb"
+	 style='padding:5px;padding-left:10px;height:30px'>
+      <ol class="breadcrumb">
+	<li v-for='(it, cidx) in tbl.info' class="breadcrumb-item">{{it.select}}</li>
+      </ol>
+    </nav>
+    <div
+      :id='idx'
+      style='overflow:auto;
 		margin:5px;
 		border: solid;
 		border-width: 1px;
@@ -39,8 +48,6 @@
 	  </template>
 	</tbody>
       </table>
-      
-      
     </div>
   </template>
 </div>
@@ -50,8 +57,11 @@
 <script>
   // TODO:table index
   // TODO:table odhis label
-  // TODO:table score
-  
+// TODO:table score
+
+
+  // TODO:DELETE REVISE after crum
+// TODO: input left  
   
 import axios from 'axios';
 
@@ -134,7 +144,7 @@ var utils= {
 export default {
     data () {
 	return {
-	    stacks:[],
+	    stacks:{},
 	    new_render:{
 		data:null,
 	    },
@@ -187,23 +197,6 @@ export default {
 	    this.opts.cNO++;
 	    return name
 	},
-	ParseNewRender(){
-	    var d=this.new_render.data
-	    var its=Object.keys(d)
-	    var h1=d[its[0]]
-	    var h1c=Object.keys(h1)
-	    var cols=["index"]
-	    var itm=[]
-	    cols=cols.concat(h1c)
-
-	    for (let i in its){
-		var s1=[i]
-		s1=s1.concat(Object.values(d[i]))
-		itm.push(s1)
-	    }
-	    this.new_render.cols=cols
-	    this.new_render.itm=itm
-	},
 	Onselect(evt){
 	    var target=evt.target;
 	    var id=target.id
@@ -233,6 +226,7 @@ export default {
 		    $c(response.data);
 		    this.new_render.data=JSON.parse(response.data.data);
 		    this.new_render.col=response.data.col
+		    this.new_render.info=structuredClone(this.info)
 		    var nodeid=this.NewNodeName()
 		    this.stacks[nodeid]=this.new_render;
 		}))
@@ -247,4 +241,15 @@ export default {
 </script>
 
 <style>
+td{
+    font-family: "Courier New", Courier, monospace;
+font-size: small;
+text-align:left;
+}
+th{
+    font-family: "Courier New", Courier, monospace;
+font-size: small;
+text-align:left;
+}  
+
 </style>

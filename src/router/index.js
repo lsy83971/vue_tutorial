@@ -24,7 +24,7 @@ const routes = [
   },
   {
       path: '/mp',
-      name: 'models',
+      name: 'mp',
       component: ModelView
   }
 ]

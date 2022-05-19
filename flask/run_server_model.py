@@ -354,7 +354,7 @@ def select():
 def render():
     data = json.loads(request.data)
     df = rt.render(data["o"])
-    print(df["label"])
+    print(df)
     return parsedf(minimize(df))
 
 def minimize(df):
