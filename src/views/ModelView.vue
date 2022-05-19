@@ -44,8 +44,8 @@
   <template v-for='(tbl, idx) in stacks' :key="idx">
     <div>
       <nav aria-label="breadcrumb"
-	   style='padding:5px;padding-left:10px;height:30px'>
-	<ol class="breadcrumb"> 
+	   style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
+	<ol class="breadcrumb" style='margin-bottom:0px'> 
 	  <li v-for='(sl, idx1) in tbl.info' class="breadcrumb-item" :key='idx1'>{{sl.select}}</li>
 	  <li class="breadcrumb-item"><a :id='idx' @click='OnLoad($event)'>load</a></li>	  
 	  <li class="breadcrumb-item"><a :id='idx' @click='OnReset($event)'>reset</a></li>
@@ -57,8 +57,7 @@
 		  border: solid;
 		  border-width: 1px;
 		  border-top-left-radius: .25rem;
-		  border-top-right-radius: .25rem;
-		  '>
+		  border-top-right-radius: .25rem;'>
 	<table
 	  class="table table-striped">  
 	  <thead>
