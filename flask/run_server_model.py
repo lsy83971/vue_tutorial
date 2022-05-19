@@ -181,14 +181,13 @@ class MP():
         self.sx_channels = sx_channels.tolist()
         self.sx_months = sx_months.tolist()
         self.sx_idx = ['pass_rate', "apply_cnt", 'psi']
-        
-        
-    def select(self, o):
-        # 1.MODEL未选则其余为灰色. 返回:{MODEL}
-        # 2.MODEL已选 TYPE1未选 则其余为灰色. 返回:{TYPE1}
-        # 3.MODEL已选 TYPE1已选 TYPE2已选 其余均未选 则其余为灰色. 返回:{CHANNEL,IDX}
-        if o["MODEL"]["active"] is Flase:
-            pass
+
+
+    ## AUC
+    def akRouter(self, word, **kwargs):
+        pass
+    
+    ## sx        
 
     def sxRouterSelect(self, word):
         print(word)
@@ -200,8 +199,33 @@ class MP():
         if sxit_d[word] == 2:
             return {"IDX": self.sx_idx}
         if sxit_d[word] == 3:
-            return dict()            
+            return dict()
 
+    def sxRouter(self, word, **kwargs):
+        assert word in sxit_d
+        if sxit_d[word] == 1:
+            return self.sx1(**kwargs)
+        if sxit_d[word] == 2:
+            return self.sx2(**kwargs)
+        if sxit_d[word] == 3:
+            return self.sx3(**kwargs)
+
+    def sx1(self, channel, idx):
+        assert idx in ['psi', 'pass_rate', "apply_cnt"]
+        if channel == "all":
+            return sx(self.d)[sxit1_t[idx]]
+        else:
+            sxdf = sx(self.d)[sxit1[idx]]
+            return sxdf[sxdf["channel"] == channel]
+
+    def sx2(self, idx, channel=None):
+        assert idx in ['psi', 'pass_rate', "lift", 'cnt', 'pct']
+        return sx(self.d)[sxit2[idx]]
+
+    def sx3(self, channel=None, idx=None):
+        return sx(self.d)[sxit3]
+        
+    ## yx
     def yxRouterSelect(self, word):
         print(word)
         assert word in yxit_d
@@ -283,16 +307,19 @@ class RT():
         if k == "用信":
             o[2]["ops"] = list(yxit_d.keys())
             o[2]["active"] = True
+            o[2]["select"] = 'None'
 
 
         if k == "AUC_KS":
             o[2]["ops"] = list(mp1.keys())
             o[2]["active"] = True
+            o[2]["select"] = 'None'            
 
 
         if k == "授信":
             o[2]["ops"] = list(sxit_d.keys())
             o[2]["active"] = True
+            o[2]["select"] = 'None'            
             
         deactivate(o, 3)            
         return o
@@ -330,16 +357,13 @@ class RT():
         mp = mps.d[m]
         mp1 = mp.d[tkey][t1]
         if t1 == "用信":
-            _yxit = yxit_d[t2]
-            if _yxit == 1:
-                return mp.yx1(channel=channel, idx=idx)
-            if _yxit == 2:
-                return mp.yx2(channel=channel, idx=idx)
-            if _yxit == 3:
-                return mp.yx3(channel=channel, idx=idx)
-            if _yxit == 4:
-                return mp.yx4(channel=channel, idx=idx)
-            
+            return mp.yxRouter(t2, channel=channel, idx=idx)
+
+        if t1 == "授信":
+            return mp.sxRouter(t2, channel=channel, idx=idx)
+
+        if t1 == "AUC_KS":
+            return mp1[t2]
         
     
 mps = MPS()
@@ -354,7 +378,6 @@ def select():
 def render():
     data = json.loads(request.data)
     df = rt.render(data["o"])
-    print(df)
     return parsedf(minimize(df))
 
 def minimize(df):
@@ -369,6 +392,7 @@ def minimize(df):
     return df
 
 def parsedf(df):
+    print(df)
     _c = df.columns.astype(str).tolist()
     _d = df.to_json(orient='values')
     return json.dumps({"col": _c, "data": _d})
