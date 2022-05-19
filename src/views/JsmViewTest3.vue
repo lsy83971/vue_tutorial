@@ -71,7 +71,7 @@
   <div class="collapse multi-collapse" id="multiCollapseExample2">
     <div style='overflow:auto;float:left'>
       <div id="code_editor" class="input"
-	   style='height:300px'
+	   style='height:300px;'
 	   >
       </div>
     </div>
@@ -440,8 +440,8 @@ export default {
 		"show_code":0,
 	    },
 	    isshow:{},
-	    //err_chd_cnt:null,
-	    //err_cnt:null,
+	    err_chd_cnt:{},
+	    err_cnt:{},
 	    node_res:{},
 	    res:{},
 	    code_res:"",
@@ -489,9 +489,9 @@ export default {
 	$g('jsm_canvas').style.left='0px'
 	$g('jsm_canvas').style.right='0px'
 	pxy = this;
-	
+	$c("GGG")
 	editor = ace.edit("code_editor");
-	//editor.setTheme("ace/theme/monokai");	
+	//editor.setTheme("ace/theme/monokai");
 	editor.session.setMode("ace/mode/python");
 	editor.setOptions({
 	    fontFamily: "Courier New",

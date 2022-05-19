@@ -23,7 +23,7 @@ const routes = [
       component: JsmViewTest3
   },
   {
-      path: '/models',
+      path: '/mp',
       name: 'models',
       component: ModelView
   }
