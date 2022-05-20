@@ -48,7 +48,7 @@
 	<ol class="breadcrumb" style='margin-bottom:0px'> 
 	  <li v-for='(sl, idx1) in tbl.info' class="breadcrumb-item" :key='idx1'>{{sl.select}}</li>
 	  <li class="breadcrumb-item"><a :pid='idx' @click='OnLoad($event)'>load</a></li>	  
-	  <li class="breadcrumb-item"><a :pid='idx' @click='OnReset($event)'>reset</a></li>
+	  <!-- li class="breadcrumb-item"><a :pid='idx' @click='OnReset($event)'>reset</a></li -->
 	  <li class="breadcrumb-item"><a :pid='idx' @click='OnDelete($event)'>delete</a></li>
 	</ol>
       </nav>

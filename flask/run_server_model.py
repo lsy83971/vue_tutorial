@@ -303,6 +303,7 @@ class RT():
             print(o)
             o[0]["ops"] = ms
             o[0]["active"] = True
+            o[0]["select"] = "None"           
             deactivate(o, 1)
         else:
             deactivate(o, 0)
@@ -312,6 +313,7 @@ class RT():
         mp = mps.d[o[0]["select"]]
         o[1]["ops"] = list(mp.d[tkey].keys())
         o[1]["active"] = True
+        o[1]["select"] = "None"
         print(list(mp.d.keys()))
         deactivate(o, 2)
         return o
@@ -324,7 +326,6 @@ class RT():
             o[2]["ops"] = list(yxit_d.keys())
             o[2]["active"] = True
             o[2]["select"] = 'None'
-
 
         if k == "AUC_KS":
             o[2]["ops"] = list(mp1.keys())
@@ -351,6 +352,7 @@ class RT():
             for i1, i2 in res.items():
                 o[pmap[i1]]["ops"] = i2
                 o[pmap[i1]]["active"] = True
+                o[pmap[i1]]["select"] = 'None'            
 
         if k == "授信":
             deactivate(o, 3) 
@@ -358,6 +360,7 @@ class RT():
             for i1, i2 in res.items():
                 o[pmap[i1]]["ops"] = i2
                 o[pmap[i1]]["active"] = True
+                o[pmap[i1]]["select"] = 'None'                           
 
         if k == "AUC_KS":
             deactivate(o, 3)
