@@ -1,38 +1,47 @@
 import pandas as pd
 
-import json
-from 
-sb = pd.DataFrame([["a", 0.000003], ["c", "d"]])
-gg = sb.to_json(orient="split")
-gg = sb.to_json(orient="records")
-gg
+sb = pd.DataFrame([[1, 2], [3, 4]])
+data:sb.to_json(orient="records")
+columns:sb.columns.tolist()
+opts:[]
 
 
+pd.Series([1, 2, 3]).max()
 
-sb.columns
-[[j for j in i] for i in sb.values]
+# 1 opts (type:process, process:{max color} width:. )
+# 2 type
+import numpy as np
+np.format_float_positional(3, trim="-")
+np.format_float_positional(3.00, trim="-")
+np.format_float_positional(3.00, trim="-")
+np.nan
+pd.isnull(np.nan)
 
-sb.applymap(lambda x:if )
+pd.api.types.is_float(3)
+round(4, 4)
+        orient : str
+            Indication of expected JSON string format.
 
-format(0.00004, 'f')
-json.dumps()
+            * Series:
 
+                - default is 'index'
+                - allowed values are: {{'split', 'records', 'index', 'table'}}.
 
-<<<<<<< HEAD
-mp.d[tkey]["AUC_KS"]. keys()
-mp.d[tkey]["授信"]. keys()
+            * DataFrame:
 
-sb = pd.DataFrame([[1, 2], [3, 4]]).T.to_dict()
+                - default is 'columns'
+                - allowed values are: {{'split', 'records', 'index', 'columns',
+                  'values', 'table'}}.
 
+            * The format of the JSON string:
 
-sb
+                - 'split' : dict like {{'index' -> [index], 'columns' -> [columns],
+                  'data' -> [values]}}
+                - 'records' : list like [{{column -> value}}, ... , {{column -> value}}]
+                - 'index' : dict like {{index -> {{column -> value}}}}
+                - 'columns' : dict like {{column -> {{index -> value}}}}
+                - 'values' : just the values array
+                - 'table' : dict like {{'schema': {{schema}}, 'data': {{data}}}}
 
-list(yx(mp.d).values())[0]. head(1).T
-pd.DataFrame([[1, 2], [3, 4]])
-=======
-sb
->>>>>>> b8e222be4e5dad692a0655320accbe7acb620f0c
+                Describing the data, where data component is like ``orient='records'``.
 
-
-str(0.0000001)
-repr(0.0000001)

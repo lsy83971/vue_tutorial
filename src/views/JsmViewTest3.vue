@@ -69,12 +69,12 @@
     </div>
   </div>
   <div class="collapse multi-collapse" id="multiCollapseExample2">
-    <div style='overflow:auto;float:left'>
+    <div style='overflow:auto;float:left;margin-left:0px'>
       <div id="code_editor" class="input">
       </div>
     </div>
     
-    <div style='height:306px;float:left;margin-left:5px'>	
+    <div style='height:306px;float:left;margin-left:0px'>	
       <textarea id="code_result"
 		v-model='code_res'>
       </textarea>
@@ -83,8 +83,8 @@
 </div>
 
 <nav aria-label="breadcrumb"
-     style='padding:5px;padding-left:10px;height:30px'>
-  <ol class="breadcrumb"> 
+     style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
+  <ol class="breadcrumb" style='margin-bottom:0px'> 
     <li class="breadcrumb-item">GL:</li>
     <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
     <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>

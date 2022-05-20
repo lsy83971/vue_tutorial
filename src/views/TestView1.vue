@@ -47,35 +47,32 @@
 	   style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
 	<ol class="breadcrumb" style='margin-bottom:0px'> 
 	  <li v-for='(sl, idx1) in tbl.info' class="breadcrumb-item" :key='idx1'>{{sl.select}}</li>
-	  <li class="breadcrumb-item"><a :id='idx' @click='OnLoad($event)'>load</a></li>	  
-	  <li class="breadcrumb-item"><a :id='idx' @click='OnReset($event)'>reset</a></li>
-	  <li class="breadcrumb-item"><a :id='idx' @click='OnDelete($event)'>delete</a></li>
+	  <li class="breadcrumb-item"><a :pid='idx' @click='OnLoad($event)'>load</a></li>	  
+	  <li class="breadcrumb-item"><a :pid='idx' @click='OnReset($event)'>reset</a></li>
+	  <li class="breadcrumb-item"><a :pid='idx' @click='OnDelete($event)'>delete</a></li>
 	</ol>
       </nav>
       <div style='overflow:auto;
 		  margin:5px;
+		  padding:10px;
 		  border: solid;
 		  border-width: 1px;
 		  border-top-left-radius: .25rem;
 		  border-top-right-radius: .25rem;'>
+	<!-- table
+	     class="table table-striped" :id='idx' -->
+
 	<table
-	  class="table table-striped">  
+	  class="display nowrap" :id='idx'>
+	
 	  <thead>
 	    <tr>
 	      <th
 		v-for='(c,idx) in tbl.col'
 		:key='idx'
-		style='width:10%;text-align:left'>{{c}}</th>
+		>{{c}}</th>
 	    </tr>
 	  </thead>
-	  <tbody>
-	    <template v-for='(nodes, idx) in tbl.data' :key="idx">
-	      <tr>
-		<td v-for='(node, idx) in nodes' :key='idx'
-		    >{{node}}</td>
-	      </tr>
-	    </template>
-	  </tbody>
 	</table>
       </div>
     </div>    
@@ -289,18 +286,52 @@ export default {
 		s["o"]=info
 		utils.post('model/render',s,(response => {
 		    $c(response.data);
-
+		    this.new_render.test=response.data
 		    this.new_render.data=JSON.parse(response.data.data);
 		    this.new_render.col=response.data.col
 		    this.new_render.info=info
+		    this.new_render.type=response.data.type
 
+		    var data=this.new_render.data;
 		    var nodeid=this.tmp_render_node
-
+		    var type=this.new_render.type
+		    $c("types:")
+		    $c(type)
+		    var col=this.new_render.col
+		    var columns=[]
+		    for (let j in col){
+			var i=col[j]
+			var tmpd={"data":i}
+			let tmp_type=type[i]
+			$c("tmp_types:")
+			$c(j);
+			$c(tmp_type)
+			if (tmp_type["type"]=="process"){
+			    tmpd['render']=function(data, type){
+				if (type==="display"){
+				    return '<progress value="' + data + '" max="'+tmp_type['process_max']+'"></progress> '+data
+				}else{
+				    return data
+				}
+			    }
+			}
+			columns.push(tmpd)
+		    }
+		    $c(columns)
 		    if (!nodeid){
 			$c("new id:")
 			var nodeid=this.NewNodeName()
 		    }
 		    this.stacks[nodeid]=structuredClone(this.new_render);
+		    $("GGGG1");
+		    this.$nextTick(
+			() => {
+			    $("#"+nodeid).DataTable({
+				data:data,
+				columns:columns
+			    })
+			}
+		    );
 		}))
 	    }catch(err){
 
@@ -309,19 +340,20 @@ export default {
 	},
 	OnDelete(evt){
 	    var target=evt.target;
-	    var id=target.pid
+	    this.test1=target
+	    var id=target.getAttribute('pid')
 	    $c("id:")
 	    $c(id)
 	    delete this.stacks[id]
 	},
 	OnLoad(evt){
 	    var target=evt.target;
-	    var id=target.pid
+	    var id=target.getAttribute('pid')
 	    this.info=this.stacks[id].info;
 	},
 	OnReset(evt){
 	    var target=evt.target;
-	    var id=target.pid
+	    var id=target.getAttribute('pid')
 	    $c("reset:");
 	    $c(id);
 	    this.ModelRender(id);
@@ -333,12 +365,17 @@ export default {
 
 <style>
   th{
-  text-align:left;
-  font-size: small;  
+  /* text-align:left;
+  font-size: small;
+  width:10%;
+  text-align:left; */
   }
   td{
-  text-align:left;
-  font-size: small;  
+  /* text-align:left;
+  font-size: small;  */
+  }
+  table{
+      float:left;
   }
   .isshow{
       margin:10px;
@@ -352,4 +389,5 @@ export default {
       margin-right:400px;
       /* height:calc(97vw - 400px); */
   }
+
 </style>

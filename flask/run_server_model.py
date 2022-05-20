@@ -145,6 +145,22 @@ pmap = {"MODEL":0,
 
 nk = ["MODEL", "TYPE1", "TYPE2", "CHANNEL", "IDX"]
 
+keyword = [
+    "month", 
+    "channel", 
+    "cnt", 
+    "bad_rate", 
+    "auc", 
+    "ks", 
+    "bins",
+    "feature",
+    "label",
+    "index",
+    "comment", 
+]
+
+keyindex = ['psi', 'pass_rate', "lift", 'cnt', 'pct', "apply_cnt"]
+
 def deactivate(o, n):
     for i in range(n, len(o)):
         o[i]["active"] = False
@@ -364,7 +380,6 @@ class RT():
 
         if t1 == "AUC_KS":
             return mp1[t2]
-        
     
 mps = MPS()
 rt = RT()
@@ -378,7 +393,8 @@ def select():
 def render():
     data = json.loads(request.data)
     df = rt.render(data["o"])
-    return parsedf(minimize(df))
+    idx = data['o'][4]["select"]
+    return parsedf(minimize(df), idx)
 
 def minimize(df):
     if "feature" in df:
@@ -391,14 +407,65 @@ def minimize(df):
         del df["index"]
     return df
 
-def parsedf(df):
-    print(df)
+def parsedf(df, idx=None):
+    if idx not in keyindex:
+        idx = None
     _c = df.columns.astype(str).tolist()
-    df = df.applymap(lambda x:np.format_float_positional(round(x, 4)) \
+    _typedict = dict()
+    _typedict1 = dict()    
+    for i in _c:
+        if i not in keyword:
+            _typedict[i] = idx
+        else:
+            _typedict[i] = i
+
+    for i, j in _typedict.items():
+        if j is None:
+            _d1 = {"data": i, "type": "normal"}
+        elif j == "psi":
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = 0.1
+            _d1["process_color"] = "blue"
+        elif j == "pass_rate":
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = 0.5
+            _d1["process_color"] = "green"
+        elif j == "lift":
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = 2
+            _d1["process_color"] = "red"
+        elif j in ["cnt", "apply_cnt"]:
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = df[i]. max(skipna = True)
+            _d1["process_color"] = "green"
+        elif j == "pct":
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = df[i]. max(skipna = True)
+            _d1["process_color"] = "green"
+        elif j == "bad_rate":
+            _d1 = {"data": i, "type": "process"}
+            _d1["process_max"] = df[i]. max(skipna = True)
+            _d1["process_color"] = "red"
+        elif j in keyword:
+            _d1 = {"data": i, "type": "normal"}
+        else:
+            raise Exception("testGG")
+        if "process_max" in _d1:
+            if pd.isnull(_d1['process_max']):
+                _d1 = {"data": i, "type": "normal"}
+        _typedict1[i] = _d1
+        
+    print(_typedict)
+    print(_typedict1)   
+    
+    df = df.applymap(lambda x: \
+                     "null" if pd.isnull(x) else \
+                     np.format_float_positional(round(x, 4), trim="-") \
                      if pd.api.types.is_float(x) \
-                     else x)
-    _d = df.astype(str).to_json(orient='values')
-    return json.dumps({"col": _c, "data": _d})
+                     else str(x))
+    _d = df.astype(str).to_json(orient='records')
+    ## lift:
+    return json.dumps({"col": _c, "data": _d, "type": _typedict1})
 
 app.add_url_rule("/model/select", "select", select, methods=["GET", "POST"])
 app.add_url_rule("/model/render", "render", render, methods=["GET", "POST"])

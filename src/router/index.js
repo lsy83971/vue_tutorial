@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import JsmViewTest3 from '../views/JsmViewTest3.vue'
 import ModelView from '../views/ModelView.vue'
+import TestView from '../views/TestView.vue'
+import TestView1 from '../views/TestView1.vue'
 
 const routes = [
   {
@@ -25,8 +27,8 @@ const routes = [
   {
       path: '/mp',
       name: 'mp',
-      component: ModelView
-  }
+      component: TestView1
+  } 
 ]
 
 const router = createRouter({
