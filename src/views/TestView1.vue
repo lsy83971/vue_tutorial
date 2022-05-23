@@ -68,6 +68,7 @@
 	  <thead>
 	    <tr>
 	      <th
+		style="text-align:center;font-size: small;"
 		v-for='(c,idx) in tbl.col'
 		:key='idx'
 		>{{c}}</th>
@@ -304,12 +305,17 @@ export default {
 			var tmpd={"data":i}
 			let tmp_type=type[i]
 			$c("tmp_types:")
-			$c(j);
+			$c(i);
 			$c(tmp_type)
 			if (tmp_type["type"]=="process"){
+			    if (!!tmp_type["process_color"]){
+				tmp_type.color=tmp_type["process_color"]
+			    }else{
+				tmp_type.color="blue"
+			    }
 			    tmpd['render']=function(data, type){
 				if (type==="display"){
-				    return '<progress value="' + data + '" max="'+tmp_type['process_max']+'"></progress> '+data
+				    return '<progress class="'+ tmp_type["color"] +'" value="' + data + '" max="'+tmp_type['process_max']+'"></progress> '+data
 				}else{
 				    return data
 				}
@@ -328,7 +334,7 @@ export default {
 			() => {
 			    $("#"+nodeid).DataTable({
 				data:data,
-				columns:columns
+				columns:columns,
 			    })
 			}
 		    );
@@ -365,14 +371,15 @@ export default {
 
 <style>
   th{
-  /* text-align:left;
+  text-align:center;
   font-size: small;
+  /*
   width:10%;
   text-align:left; */
   }
   td{
-  /* text-align:left;
-  font-size: small;  */
+  text-align:center;
+  font-size: small;
   }
   table{
       float:left;
@@ -390,4 +397,71 @@ export default {
       /* height:calc(97vw - 400px); */
   }
 
+
+  progress[class='red'] {
+      -webkit-appearance: none;
+      appearance: none;      
+      height: 0.5em;
+      /* vertical-align: -0.2em; */
+      width: 10em;      
+  }
+
+
+
+  progress[class='red']::-webkit-progress-bar {
+      background-color: #eee;
+      border-radius: 0.25em;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+  }
+
+  progress[class='red']::-webkit-progress-value {
+         /* background-image:
+	 /* -webkit-linear-gradient(-45deg, 
+	                          transparent 33%, rgba(0, 0, 0, .1) 33%, 
+	                          rgba(0,0, 0, .1) 66%, transparent 66%),
+	  -webkit-linear-gradient(top, 
+	                          rgba(255, 255, 255, .25), 
+	                          rgba(0, 0, 0, .25)),
+	  -webkit-linear-gradient(left, #09c, #f44); */
+      
+
+	  /* background-size: 35px 20px, 90% 90%, 90% 90%; */
+	  border-radius: 0.25em; 
+	  background:red;
+  }
+
+
+  progress[class='green'] {
+      -webkit-appearance: none;
+      appearance: none;      
+      height: 0.5em;
+      /* vertical-align: -0.2em; */
+      width: 10em;      
+  }
+
+
+
+  progress[class='green']::-webkit-progress-bar {
+      background-color: #eee;
+      border-radius: 0.25em;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+  }
+
+  progress[class='green']::-webkit-progress-value {
+         /* background-image:
+	 /* -webkit-linear-gradient(-45deg, 
+	                          transparent 33%, rgba(0, 0, 0, .1) 33%, 
+	                          rgba(0,0, 0, .1) 66%, transparent 66%),
+	  -webkit-linear-gradient(top, 
+	                          rgba(255, 255, 255, .25), 
+	                          rgba(0, 0, 0, .25)),
+	  -webkit-linear-gradient(left, #09c, #f44); */
+      
+
+	  /* background-size: 35px 20px, 90% 90%, 90% 90%; */
+	  border-radius: 0.25em; 
+	  background:green;
+  }
+
+  
 </style>

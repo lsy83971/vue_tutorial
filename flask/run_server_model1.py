@@ -434,6 +434,11 @@ def minimize(df):
         del df["label"]
     if "index" in df:
         del df["index"]
+
+    for i in ["pct_base", "bad_rate_base", "cnt_all", "bad_cnt_all", "days_far_from_now", "PSI"]:
+        if i in df:
+            del df[i]
+        
     return df
 
 def parsedf(df, idx=None):
@@ -453,12 +458,12 @@ def parsedf(df, idx=None):
             _d1 = {"data": i, "type": "normal"}
         elif j == "psi":
             _d1 = {"data": i, "type": "process"}
-            _d1["process_max"] = 0.1
+            _d1["process_max"] = 0.05
             _d1["process_color"] = "blue"
         elif j == "pass_rate":
             _d1 = {"data": i, "type": "process"}
             _d1["process_max"] = 0.5
-            _d1["process_color"] = "green"
+            _d1["process_color"] = "blue"
         elif j == "lift":
             _d1 = {"data": i, "type": "process"}
             _d1["process_max"] = 2
@@ -466,11 +471,11 @@ def parsedf(df, idx=None):
         elif j in ["cnt", "apply_cnt"]:
             _d1 = {"data": i, "type": "process"}
             _d1["process_max"] = df[i]. max(skipna = True)
-            _d1["process_color"] = "green"
+            _d1["process_color"] = "blue"
         elif j == "pct":
             _d1 = {"data": i, "type": "process"}
             _d1["process_max"] = df[i]. max(skipna = True)
-            _d1["process_color"] = "green"
+            _d1["process_color"] = "blue"
         elif j == "bad_rate":
             _d1 = {"data": i, "type": "process"}
             _d1["process_max"] = df[i]. max(skipna = True)
