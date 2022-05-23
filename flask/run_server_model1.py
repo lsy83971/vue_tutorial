@@ -120,7 +120,14 @@ keyword = [
     "feature",
     "label",
     "index",
-    "comment", 
+    "comment",
+    "apply_cnt",
+    "pass_rate", 
+    "pct",
+    "psi",
+    "PSI", 
+    "lift",
+    "pct_"
 ]
 
 keyindex = ['psi', 'pass_rate', "lift", 'cnt', 'pct', "apply_cnt"]
@@ -476,6 +483,9 @@ def parsedf(df, idx=None):
             if pd.isnull(_d1['process_max']):
                 _d1 = {"data": i, "type": "normal"}
         _typedict1[i] = _d1
+
+    print(_typedict)
+    print(_typedict1)    
         
     df = df.applymap(lambda x: \
                      "null" if pd.isnull(x) else \
