@@ -1,7 +1,7 @@
 let editor;
 window.onload = function() {
-    editor = ace.edit("code_editor");
-    editor.session.setMode("ace/mode/python");
+    //editor = ace.edit("code_editor");
+    //editor.session.setMode("ace/mode/python");
 }
 
 function changeLanguage() {

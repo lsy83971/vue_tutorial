@@ -4,6 +4,7 @@ import JsmViewTest3 from '../views/JsmViewTest3.vue'
 import ModelView from '../views/ModelView.vue'
 import TestView from '../views/TestView.vue'
 import TestView1 from '../views/TestView1.vue'
+import TestView2 from '../views/TestView2.vue'
 
 const routes = [
   {
@@ -28,12 +29,18 @@ const routes = [
       path: '/mp',
       name: 'mp',
       component: TestView1
-  } 
+  },
+  {
+      path: '/jsmtest4',
+      name: 'jsmtest4',
+      component: TestView2,
+  }    
 ]
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
 
 export default router

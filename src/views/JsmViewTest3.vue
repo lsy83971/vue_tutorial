@@ -944,7 +944,7 @@ export default {
 	    }
 	    for (let j in info){
 		if (info[j]["sur"] != 0){
-		    info[j]["sur"]=namemap[info[i]["sur"]]
+		    info[j]["sur"]=namemap[info[j]["sur"]]
 		}
 		var tmp_struct=struct[j].map(function(x){return namemap[x]})
 		struct[j]=tmp_struct

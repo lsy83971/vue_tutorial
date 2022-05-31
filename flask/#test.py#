@@ -95,17 +95,19 @@ Z1 = Z[::5, ::5]
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-Z1 = list()
+Z2 = list()
 for i in range(X1.shape[0] - 1):
-    Z1_sub = list()
+    Z2_sub = list()
     for j in range(Y1.shape[0] - 1):    
         s1 = int(min(Z1[i, j], Z1[i + 1, j], Z1[i, j + 1], Z1[i + 1, j + 1]) / s)*s
         x = X1[i:(i + 2), j:(j + 2)]
         y = Y1[i:(i + 2), j:(j + 2)]        
         z = np.array([[s1, s1], [s1, s1]])
-        Z1_sub.append(s1)
+        Z2_sub.append(s1)
+    Z2.append(Z2_sub)
 
-        
+Z2 = np.array(Z2)
+
         ax.plot_surface(x, y, z, cmap="plasma", alpha=0.8)        
 plt.show()
 X1
