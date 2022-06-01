@@ -4132,3 +4132,5 @@ usename:
 127.0.0.1 - - [31/May/2022 17:19:25] "POST /flask/tree HTTP/1.1" 200 -
 127.0.0.1 - - [31/May/2022 17:19:43] "POST /flask/loaddata HTTP/1.1" 200 -
 127.0.0.1 - - [31/May/2022 17:19:45] "POST /flask/tree HTTP/1.1" 200 -
+127.0.0.1 - - [31/May/2022 18:13:11] "POST /model/select HTTP/1.1" 200 -
+127.0.0.1 - - [01/Jun/2022 08:57:00] "POST /model/select HTTP/1.1" 200 -

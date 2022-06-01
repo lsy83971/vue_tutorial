@@ -686,7 +686,12 @@ export default {
 	
 
 	// 3.set
-	
+
+	SetSizeOrigin(i){
+	    var n=this.GetLayer(i);
+	    $g(i).style.width=n.w1+"px";
+	    $g(i).style.height=n.h1+"px";
+	},
 	SetSize(i){
 	    var n=this.GetLayer(i);
 	    n.w1=$g(i).offsetWidth;
@@ -1122,6 +1127,7 @@ export default {
 	    this.onshowglobal=i
 	    for (let j in pxy.info){
 		this.info[j].onshow=i
+		this.SetSizeOrigin(j);
 	    }
 	    this.WatchThis();	    
 	    this.SetThis();
@@ -1131,6 +1137,7 @@ export default {
 		i=this.active_node
 	    }
 	    this.info[i].onshow=op
+	    this.SetSizeOrigin(i);
 	    this.WatchThis();
 	    this.SetThis();
 	},
