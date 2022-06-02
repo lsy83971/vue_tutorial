@@ -127,7 +127,9 @@ keyword = [
     "psi",
     "PSI", 
     "lift",
-    "pct_"
+    "pct_",
+    "color", 
+    
 ]
 
 keyindex = ['psi', 'pass_rate', "lift", 'cnt', 'pct', "apply_cnt"]
@@ -426,9 +428,9 @@ def render():
     return parsedf(minimize(df), idx)
 
 def minimize(df):
-    if "feature" in df:
-        df = df[df["feature"] == "score"]
-        del df["feature"]
+    # if "feature" in df:
+    #     df = df[df["feature"] == "score"]
+    #     del df["feature"]
     if "label" in df:
         df = df[df["label"] == "odhis30_first"]
         del df["label"]
@@ -444,6 +446,8 @@ def minimize(df):
 def parsedf(df, idx=None):
     if idx not in keyindex:
         idx = None
+    if "feature" in df.columns:
+        df["color"] = (df["feature"]. shift(1)!= df["feature"]).cumsum().apply(lambda x:"white" if x % 2 == 1 else "black")
     _c = df.columns.astype(str).tolist()
     _typedict = dict()
     _typedict1 = dict()    
@@ -488,17 +492,12 @@ def parsedf(df, idx=None):
             if pd.isnull(_d1['process_max']):
                 _d1 = {"data": i, "type": "normal"}
         _typedict1[i] = _d1
-
-    print(_typedict)
-    print(_typedict1)    
-        
     df = df.applymap(lambda x: \
                      "null" if pd.isnull(x) else \
                      np.format_float_positional(round(x, 4), trim="-") \
                      if pd.api.types.is_float(x) \
                      else str(x))
     _d = df.astype(str).to_json(orient='records')
-    ## lift:
     return json.dumps({"col": _c, "data": _d, "type": _typedict1})
 
 app.add_url_rule("/model/select", "select", select, methods=["GET", "POST"])

@@ -333,6 +333,12 @@ export default {
 		    this.$nextTick(
 			() => {
 			    $("#"+nodeid).DataTable({
+				stripeClasses:[],
+				createdRow: function( row, data, dataIndex ) {
+				    if ( data["color"] == "black" ) {
+					$(row).addClass('box_bgcolor_black');
+				    }
+				},
 				data:data,
 				columns:columns,
 			    })
@@ -461,6 +467,10 @@ export default {
 	  /* background-size: 35px 20px, 90% 90%, 90% 90%; */
 	  border-radius: 0.25em; 
 	  background:green;
+  }
+
+  .box_bgcolor_black{
+      box-shadow: inset 0 0 0 9999px rgba(0,0,0,0.05);
   }
 
   
