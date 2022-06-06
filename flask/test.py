@@ -115,8 +115,41 @@ Z
 
 
 
+import pandas as pd
+
+gg = pd.read_pickle("./models/MONITOR_ALL.pkl")
+gg.keys()
+
+
+
+import json
+pd.DataFrame(json.loads(gg['总体渠道分月指标监控_AUC，KS(auc)']))
+
+for i in gg.keys():
+    print(i)
+    print(pd.DataFrame(json.loads(gg[i])))
+
+
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(cnt)"])).columns
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(cnt)"])).columns
 
 
 
 
 
+json.loads()
+
+
+
+pd.Series(gg.keys())
+
+
+pd.DataFrame(json.loads(gg["整体情况"]))
+
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_稳定性(psi)"]))
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(bad_rate)"]))
+
+
+asdfasdfasdf fdsafe
+
+gg.keys()

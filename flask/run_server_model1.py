@@ -11,6 +11,8 @@ from flask import Flask, session
 from flask import render_template_string, render_template
 from flask import request
 import json
+
+
 import re
 re_month = re.compile("\d{4}-\d{2}")
 
@@ -29,7 +31,6 @@ def j2dfd(x):
         if isinstance(x[i], dict):
             j2dfd(x[i])
             continue
-        print(i)
         raise BaseException('j2df error')
 
 def yx(x):
@@ -195,7 +196,10 @@ class node_TypeDict(node):
 class node_MODEL(node_TypeDict):
     def fit_next(self, data, order):
         select = choose(order, self.name)["select"]
-        node = node_TYPE1("TYPE1")
+        if select == "MONITOR_ALL.pkl":
+            node = node_TYPE2("TYPE2")
+        else:
+            node = node_TYPE1("TYPE1")
         node.fit(data, order)
         self.ops_next[select] = node
 
@@ -208,8 +212,8 @@ class node_TYPE1(node_TypeDict):
 
 class node_TYPE2(node_TypeDict):
     def fit_next(self, data, order):
-        select2 = choose(order, self.name)["select"]
-        select1 = choose(order, "TYPE1")["select"]
+        select2 = choose(order, self.name).get("select")
+        select1 = choose(order, "TYPE1").get("select")
         if select1 == "AUC_KS":
             return
         if select2 == "全量":
@@ -284,6 +288,8 @@ rf_config = {
         "总体渠道分月指标监控_申请量(apply_cnt)": ["分月份", "apply_cnt", "total"],
         "总体渠道分月指标监控_申请量(psi)": ["分月份", "psi", "total"],
         "总体渠道分月指标监控_稳定性(psi)": ["分月份", "psi", "total"],
+
+        
         "总体渠道分月指标监控_提升度(lift)": ["分月份", "lift", "total"],
         "总体渠道分月指标监控_通过人数(cnt)": ["分月份", "cnt", "total"],
         "总体渠道分月指标监控_人数占比(pct)": ["分月份", "pct", "total"],
@@ -310,7 +316,13 @@ rf_config = {
         '分渠道分月份指标监控_AUC，KS': ["分月份/渠道"],
         '总体渠道分月指标监控_AUC，KS': ["分月份"],
         '总体月份分渠道指标监控_AUC，KS': ["分渠道"],
-        '总体渠道、月份指标监控': ["全量"]
+        '总体渠道、月份指标监控': ["全量"], 
+
+        "总体渠道分月指标监控_AUC，KS(cnt)": ["分月份", "cnt", "total"],
+        "总体渠道分月指标监控_AUC，KS(bad_rate)": ["分月份", "bad_rate", "total"],
+        "总体渠道分月指标监控_AUC，KS(auc)": ["分月份", "AUC", "total"],
+        "总体渠道分月指标监控_AUC，KS(ks)": ["分月份", "KS", "total"],
+        "整体情况": ["全量"],
     }
 }
 
@@ -352,7 +364,6 @@ class OrderRoute():
             need_finish = True
         
         while True:
-            print(name)
             ops_dict = node.ops_dict()
             for name, ops in ops_dict.items():
                 i1 = choose(new_order, name)
@@ -372,8 +383,6 @@ class OrderRoute():
                 if (i["active"] is False) or (i["select"] not in ops):
                     selectactive = False                    
                     break
-            print("SELECTACT:")
-            print(selectactive)            
             if selectactive is False:
                 return new_order, None
 
@@ -388,7 +397,6 @@ class OrderRoute():
 
             new_node = node.node_next(order)
             if new_node is None:
-                print("newnode None")
                 if render is False:
                     return new_order, None
                 else:
@@ -418,7 +426,6 @@ odr = OrderRoute()
 def select():
     data = json.loads(request.data)
     o, df = odr.select(data["o"], data["p"])
-    print(pd.DataFrame(o))
     return json.dumps(o)
 
 def render():

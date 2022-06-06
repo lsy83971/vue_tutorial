@@ -1,8 +1,5 @@
 import sys
 import traceback
-sys.path.append("/home/lsy/pyxmind")
-from pyxmind import calcTree, result_parse
-from pdform import pd2json, pd2str, beautify, abbrStr
 import pandas as pd
 import numpy as np
 import uuid
@@ -16,9 +13,10 @@ import json
 app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")
 app.config['SECRET_KEY'] = os.urandom(24)
 
-# 任务是建立单机版的调试器
-# simple way
-# 一切从简单 但是预留扩展空间
+######################################################
+
+from pyxmind import calcTree, result_parse
+from pdform import pd2json, pd2str, beautify, abbrStr
 
 class treeUserManager:
     def __init__(self):
@@ -75,6 +73,7 @@ def clear():
 def loaddata():
     try:
         data = json.loads(request.data)
+        print(data)
         ti = tm.getTreeInfo()
         ti.loaddata(data)
         return "load json success!"        

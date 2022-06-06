@@ -95,19 +95,17 @@ Z1 = Z[::5, ::5]
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-Z2 = list()
+Z1 = list()
 for i in range(X1.shape[0] - 1):
-    Z2_sub = list()
+    Z1_sub = list()
     for j in range(Y1.shape[0] - 1):    
         s1 = int(min(Z1[i, j], Z1[i + 1, j], Z1[i, j + 1], Z1[i + 1, j + 1]) / s)*s
         x = X1[i:(i + 2), j:(j + 2)]
         y = Y1[i:(i + 2), j:(j + 2)]        
         z = np.array([[s1, s1], [s1, s1]])
-        Z2_sub.append(s1)
-    Z2.append(Z2_sub)
+        Z1_sub.append(s1)
 
-Z2 = np.array(Z2)
-
+        
         ax.plot_surface(x, y, z, cmap="plasma", alpha=0.8)        
 plt.show()
 X1
@@ -117,8 +115,47 @@ Z
 
 
 
+import pandas as pd
+
+gg = pd.read_pickle("./models/MONITOR_ALL.pkl")
+gg.keys()
+
+
+
+import json
+pd.DataFrame(json.loads(gg['总体渠道分月指标监控_AUC，KS(auc)']))
+
+for i in gg.keys():
+    print(i)
+    print(pd.DataFrame(json.loads(gg[i])))
+
+
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(cnt)"])).columns
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(cnt)"])).columns
 
 
 
 
 
+json.loads()
+
+
+
+pd.Series(gg.keys())
+
+
+pd.DataFrame(json.loads(gg["整体情况"]))
+
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_稳定性(psi)"]))
+pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(bad_rate)"]))
+
+
+asdfasdfasdf fdsafe
+
+gg.keys()
+import requests
+
+sb = requests.post("http://127.0.0.1:8081/model/select", data={"a": 1})
+sb = requests.post("http://127.0.0.1:8081/flask/loaddata", data={"a": 1})
+sb = requests.post("http://127.0.0.1:8081/flask/test", data={"a": 1})
+print(sb.text)
