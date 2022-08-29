@@ -3,7 +3,6 @@
 	  id='sidebar_open'
 	  data-bs-target="#offcanvasScrolling"
 	  >Select A Model Report!</button>
-  <!-- buttons on the right side -->  
   <div class="offcanvas offcanvas-end"
        data-bs-scroll="true"
        data-bs-backdrop="false"
@@ -38,100 +37,61 @@
       </div>
     </div>    
   </div>
-
-  <!-- views in the middle -->    
-  <div style='padding:10px'
+<div style='padding:10px'
      id='tblResult'
      class='isshow'
      >
-    <template v-for='(tbl, idx) in stacks' :key="idx">
-      <div>
-	<nav aria-label="breadcrumb"
-	     style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
-	  <ol class="breadcrumb" style='margin-bottom:0px'> 
-	    <li v-for='(sl, idx1) in tbl.info' class="breadcrumb-item" :key='idx1'>{{sl.select}}</li>
-	    <li class="breadcrumb-item"><a :pid='idx' @click='OnLoad($event)'>load</a></li>	  
-	    <li class="breadcrumb-item"><a :pid='idx' @click='OnDelete($event)'>delete</a></li>
-	  </ol>
-	</nav>
-	<div style='overflow:auto;
-		    margin:5px;
-		    padding:10px;
-		    border: solid;
-		    border-width: 1px;
-		    border-top-left-radius: .25rem;
-		    border-top-right-radius: .25rem;'>
-	  <table class="display nowrap" :id='idx'>
-	    <thead>
+  <template v-for='(tbl, idx) in stacks' :key="idx">
+    <div>
+      <nav aria-label="breadcrumb"
+	   style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
+	<ol class="breadcrumb" style='margin-bottom:0px'> 
+	  <li v-for='(sl, idx1) in tbl.info' class="breadcrumb-item" :key='idx1'>{{sl.select}}</li>
+	  <li class="breadcrumb-item"><a :id='idx' @click='OnLoad($event)'>load</a></li>	  
+	  <li class="breadcrumb-item"><a :id='idx' @click='OnReset($event)'>reset</a></li>
+	  <li class="breadcrumb-item"><a :id='idx' @click='OnDelete($event)'>delete</a></li>
+	</ol>
+      </nav>
+      <div style='overflow:auto;
+		  margin:5px;
+		  border: solid;
+		  border-width: 1px;
+		  border-top-left-radius: .25rem;
+		  border-top-right-radius: .25rem;'>
+	<table
+	  class="table table-striped">  
+	  <thead>
+	    <tr>
+	      <th
+		v-for='(c,idx) in tbl.col'
+		:key='idx'
+		style='width:10%;text-align:left'>{{c}}</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    <template v-for='(nodes, idx) in tbl.data' :key="idx">
 	      <tr>
-		<th
-		  style="text-align:center;font-size: small;"
-		  v-for='(c,idx) in tbl.col'
-		  :key='idx'
-		  >{{c}}</th>
+		<td v-for='(node, idx) in nodes' :key='idx'
+		    >{{node}}</td>
 	      </tr>
-	    </thead>
-	  </table>
-	</div>
-      </div>    
-    </template>
-  </div>
+	    </template>
+	  </tbody>
+	</table>
+      </div>
+    </div>    
+  </template>
+</div>
 </template>
 
 
 <script>
-// TODO:table index
-// TODO:table odhis label
+  // TODO:table index
+  // TODO:table odhis label
 // TODO:table score
-// TODO:DELETE REVISE after crum
-// TODO:input left
 
-// USER MANUAL:
-// mdl=this;
-// this.stacks is core obj
 
-// 1.info:
-// [
-// {
-//     name:"MODEL",
-//     active:false,
-//     ops:['None'],
-//     select:"None",
-// },
-// {
-//     name:"TYPE1",
-//     active:false,
-//     ops:['None'],
-//     select:"None",
-// },
-// {
-//     name:"TYPE2",
-//     active:false,
-//     ops:['None'],
-//     select:"None",
-// },
-// {
-//     name:"CHANNEL",
-//     active:false,
-//     ops:['None'],
-//     select:"None",
-// },
-// {
-//     name:"IDX",
-//     active:false,
-//     ops:['None'],
-//     select:"None",
-// }]
-
-// 2.POST
-// select:
-//   url: model/select
-//   format:{'o':info,'p':p} //p: "IDX","TYPE2" etc.
-
-// render:
-//   url: model/render
-//   format:{'o':info}
-
+  // TODO:DELETE REVISE after crum
+// TODO: input left  
   
 import axios from 'axios';
 
@@ -209,6 +169,8 @@ var utils= {
 	    })
     }
 }
+
+  
 export default {
     data () {
 	return {
@@ -253,6 +215,7 @@ export default {
 	    ]
 	}
     },
+
     mounted() {
 	mdl=this;
 	this.ModelSelect("RAW");
@@ -326,63 +289,18 @@ export default {
 		s["o"]=info
 		utils.post('model/render',s,(response => {
 		    $c(response.data);
-		    this.new_render.test=response.data
+
 		    this.new_render.data=JSON.parse(response.data.data);
 		    this.new_render.col=response.data.col
 		    this.new_render.info=info
-		    this.new_render.type=response.data.type
 
-		    var data=this.new_render.data;
 		    var nodeid=this.tmp_render_node
-		    var type=this.new_render.type
-		    $c("types:")
-		    $c(type)
-		    var col=this.new_render.col
-		    var columns=[]
-		    for (let j in col){
-			var i=col[j]
-			var tmpd={"data":i}
-			let tmp_type=type[i]
-			$c("tmp_types:")
-			$c(i);
-			$c(tmp_type)
-			if (tmp_type["type"]=="process"){
-			    if (!!tmp_type["process_color"]){
-				tmp_type.color=tmp_type["process_color"]
-			    }else{
-				tmp_type.color="blue"
-			    }
-			    tmpd['render']=function(data, type){
-				if (type==="display"){
-				    return '<progress class="'+ tmp_type["color"] +'" value="' + data + '" max="'+tmp_type['process_max']+'"></progress> '+data
-				}else{
-				    return data
-				}
-			    }
-			}
-			columns.push(tmpd)
-		    }
-		    $c(columns)
+
 		    if (!nodeid){
 			$c("new id:")
 			var nodeid=this.NewNodeName()
 		    }
 		    this.stacks[nodeid]=structuredClone(this.new_render);
-		    $("GGGG1");
-		    this.$nextTick(
-			() => {
-			    $("#"+nodeid).DataTable({
-				stripeClasses:[],
-				createdRow: function( row, data, dataIndex ) {
-				    if ( data["color"] == "black" ) {
-					$(row).addClass('box_bgcolor_black');
-				    }
-				},
-				data:data,
-				columns:columns,
-			    })
-			}
-		    );
 		}))
 	    }catch(err){
 
@@ -391,20 +309,19 @@ export default {
 	},
 	OnDelete(evt){
 	    var target=evt.target;
-	    this.test1=target
-	    var id=target.getAttribute('pid')
+	    var id=target.pid
 	    $c("id:")
 	    $c(id)
 	    delete this.stacks[id]
 	},
 	OnLoad(evt){
 	    var target=evt.target;
-	    var id=target.getAttribute('pid')
+	    var id=target.pid
 	    this.info=this.stacks[id].info;
 	},
 	OnReset(evt){
 	    var target=evt.target;
-	    var id=target.getAttribute('pid')
+	    var id=target.pid
 	    $c("reset:");
 	    $c(id);
 	    this.ModelRender(id);
@@ -416,18 +333,12 @@ export default {
 
 <style>
   th{
-  text-align:center;
-  font-size: small;
-  /*
-  width:10%;
-  text-align:left; */
+  text-align:left;
+  font-size: small;  
   }
   td{
-  text-align:center;
-  font-size: small;
-  }
-  table{
-      float:left;
+  text-align:left;
+  font-size: small;  
   }
   .isshow{
       margin:10px;
@@ -441,76 +352,4 @@ export default {
       margin-right:400px;
       /* height:calc(97vw - 400px); */
   }
-
-
-  progress[class='red'] {
-      -webkit-appearance: none;
-      appearance: none;      
-      height: 0.5em;
-      /* vertical-align: -0.2em; */
-      width: 10em;      
-  }
-
-
-
-  progress[class='red']::-webkit-progress-bar {
-      background-color: #eee;
-      border-radius: 0.25em;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
-  }
-
-  progress[class='red']::-webkit-progress-value {
-         /* background-image:
-	 /* -webkit-linear-gradient(-45deg, 
-	                          transparent 33%, rgba(0, 0, 0, .1) 33%, 
-	                          rgba(0,0, 0, .1) 66%, transparent 66%),
-	  -webkit-linear-gradient(top, 
-	                          rgba(255, 255, 255, .25), 
-	                          rgba(0, 0, 0, .25)),
-	  -webkit-linear-gradient(left, #09c, #f44); */
-      
-
-	  /* background-size: 35px 20px, 90% 90%, 90% 90%; */
-	  border-radius: 0.25em; 
-	  background:red;
-  }
-
-
-  progress[class='green'] {
-      -webkit-appearance: none;
-      appearance: none;      
-      height: 0.5em;
-      /* vertical-align: -0.2em; */
-      width: 10em;      
-  }
-
-
-
-  progress[class='green']::-webkit-progress-bar {
-      background-color: #eee;
-      border-radius: 0.25em;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
-  }
-
-  progress[class='green']::-webkit-progress-value {
-         /* background-image:
-	 /* -webkit-linear-gradient(-45deg, 
-	                          transparent 33%, rgba(0, 0, 0, .1) 33%, 
-	                          rgba(0,0, 0, .1) 66%, transparent 66%),
-	  -webkit-linear-gradient(top, 
-	                          rgba(255, 255, 255, .25), 
-	                          rgba(0, 0, 0, .25)),
-	  -webkit-linear-gradient(left, #09c, #f44); */
-      
-
-	  /* background-size: 35px 20px, 90% 90%, 90% 90%; */
-	  border-radius: 0.25em; 
-	  background:green;
-  }
-
-  .box_bgcolor_black{
-      box-shadow: inset 0 0 0 9999px rgba(0,0,0,0.05);
-  }
-
-  
 </style>

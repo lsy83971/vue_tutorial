@@ -153,3 +153,45 @@ pd.DataFrame(json.loads(gg["总体渠道分月指标监控_AUC，KS(bad_rate)"])
 asdfasdfasdf fdsafe
 
 gg.keys()
+
+
+import requests
+import json
+import pandas as pd
+url = "http://127.0.0.1:10710/invocations"
+headers = {'content-type': 'application/json; format=pandas-split'}
+msg1 = {
+		"cs_ali_fraud_score": -99.0,
+		"cs_bes_tyf": -99.0,
+		"cs_bj_qyf": -99.0,
+		"cs_gy_hcf": -99.0,
+		"cs_hnsk_hjf": -99.0,
+		"cs_hnsk_xff": -99.0,
+		"cs_hzph_xyf7": -99.0,
+		"cs_rh_score": -99.0,
+		"cs_tc_dzf": -99.0,
+		"cs_td_zrf": -99.0,
+		"cs_tytx_bsd1": -99.0,
+		"cust_age": 36.0,
+		"cust_id_area": 370323.0,
+		"cust_work_city": 370303.0,
+		"dxm_qzf": 53.0,
+		"dxm_xmf_score": 558.0,
+		"hds_36m_total_purchse_money": 110.19,
+		"idcard_district": 370323.0,
+		"td_xyf_dq_score": 0.0094,
+		"tz_co_model_score": -99.0,
+		"upa_avg_consume_cnt_12m": -99.0,
+		"upa_avg_deal_amt_12m": -99.0,
+		"upa_failed_deal_cnt_3m": 0.0,
+		"upa_fund_shortage_days_6m": 0.0,
+		"upa_max_deal_amt_12m": -99.0,
+		"upa_max_score": -99.0,
+		"upa_min_consume_amt_12m": -99.0,
+		"upa_total_deal_amt_low_limit_12m": -99.0
+}
+msg = pd.DataFrame([msg1]).to_json(orient="split")
+r = requests.post(url, data=msg, headers=headers)
+pd.Series(json.loads(r.text))
+
+

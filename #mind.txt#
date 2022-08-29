@@ -1,0 +1,86 @@
+主线:
+1.public/index.html 决定主页
+2.src/main.js 决定如何渲染 #app createApp(App).use(router).mount('#app')
+3.router/index.js 决定如何导入router
+4.src/app.vue 决定#app主页
+5.views/ 决定使用vue的方式
+
+JSM网页与python服务交互:
+1.post:flask/tree; input:this.IOTreeInfo();
+	    {'info':this.info,'struct':this.struct,'opts':this.opts}
+
+c_0:
+color: "black"
+h1: 26
+h2: 0
+h3: 26
+h4: 0
+id: "c_0"
+name: "c_0"
+onshow: "v" #v代表显示代码 id表示显示id rawname表示name
+rawname: "c_0"
+show: 1 #1表示展开 0表示未展开
+sur: 0 #无后缀节点则为0 有后缀节点则为后缀id例如c_0
+v: "as $f" # v id rawname name 为几种模式
+w1: 180
+w2: 0
+w2_add: 0
+w3: 180
+w4: 0
+w4_add: 0
+x0: 200
+x1: 110
+x2: 290
+x3: 290
+x4: 290
+x5: 290
+x6: 110
+x7: 290
+y0: 0
+y1: -13
+y2: 13
+y3: 0
+y4: 0
+y5: -13
+y6: 13
+y7: 0
+y8: 0
+
+
+
+FlaskSendCode
+
+
+支线:
+1. 根目录vue.config.js
+
+proxy->target: 'http://localhost:5005', ##改变路由
+
+2. 根目录.eslintrc.js
+
+rules: {
+      "no-extra-boolean-cast":"off", ## 忽略 npm run build 的警告
+  }
+}
+
+3. ./public/index.html
+
+var pxy;
+var mdl; 很关键的两个变量 便于调试
+<div id="app"></div> 和vue APP相关网页代码会放置在此div下
+
+4. ./src/main.js
+
+5. ./src/App.vue
+
+vue 的导入 通过webpack 详见:
+https://juejin.cn/post/6847902218054713351
+
+
+6. router
+模拟出一种带通过请求url后缀 返回相应页面的机制
+<router-link to="/">Home</router-link>
+<router-view/> 代表用户输入url后缀相应页面
+
+
+

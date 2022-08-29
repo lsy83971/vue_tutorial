@@ -1,10 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import JsmViewTest3 from '../views/JsmViewTest3.vue'
-import ModelView from '../views/ModelView.vue'
-import TestView from '../views/TestView.vue'
-import TestView1 from '../views/TestView1.vue'
-import TestView2 from '../views/TestView2.vue'
+import mindcode from '../views/MindCode.vue'
+import modelview from '../views/ModelView.vue'
+import mindtext from '../views/MindText.vue'
 
 const routes = [
   {
@@ -21,19 +19,19 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
-      path: '/jsmtest3',
-      name: 'jsmtest3',
-      component: JsmViewTest3
+      path: '/mindcode',
+      name: 'mindcode',
+      component: mindcode
   },
   {
       path: '/mp',
       name: 'mp',
-      component: TestView1
+      component: modelview
   },
   {
-      path: '/jsmtest4',
-      name: 'jsmtest4',
-      component: TestView2,
+      path: '/mindtext',
+      name: 'mindtext',
+      component: mindtext,
   }    
 ]
 

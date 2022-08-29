@@ -2,8 +2,8 @@
   <nav>
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link> |
-    <router-link to="/jsmtest3">Jsm</router-link> |
-    <router-link to="/jsmtest4">Mind</router-link> |            
+    <router-link to="/mindcode">MDC</router-link> |
+    <router-link to="/mindtext">MDT</router-link> |            
     <router-link to="/mp">Models</router-link>
 
   </nav>
