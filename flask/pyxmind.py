@@ -212,12 +212,14 @@ class calcNode:
         code = self.ci.code
         self.exec()
         if tp == "null":
-            self.stack.append(self.result())
+            if self.attr._use_stack:
+                self.stack.append(self.result())
             return
         
         if tp != "iter":
             yield self.result_point()
-            self.stack.append(self.result())
+            if self.attr._use_stack:            
+                self.stack.append(self.result())
         else:
             try:
                 for i in self.iterfunc(self):
@@ -225,14 +227,17 @@ class calcNode:
                     self.route = deepcopy(self.rawroute)
                     self.route[ - 1] = self.route[ - 1] + "##key:" + i["key"]
                     yield self.result_point()
-                    self.stack.append(self.result())
+                    if self.attr._use_stack:
+                        self.stack.append(self.result())
             except:
                 self.toData = "iterError!"
                 self.err="Error:\n" + traceback.format_exc()
                 self.route = deepcopy(self.rawroute)
                 self.eroute = self.route
                 yield self.result_point()
-                self.stack.append(self.result())
+                
+                if self.attr._use_stack:                
+                    self.stack.append(self.result())
 
     def iterChd(self):
         tp = self.ci.h0
@@ -243,10 +248,11 @@ class calcNode:
                 n.receive(j)
                 yield from n.iter()
         
-    def iter(self):
+    def iter(self, use_stack=True):
         """
         step2
         """
+        self.attr._use_stack = use_stack
         tp = self.ci.h0
         tp1 = self.ci.h1
         if tp == "off":
@@ -309,26 +315,23 @@ class calcTree:
         return self.nodes[i]
 
 if __name__ == "__main__":
-    data = {'info': {'root': {'v': 'as_id\n$f\n:root', 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 182, 'h2': 130, 'w2_add': 212, 'h4': 0, 'w4': 0, 'w4_add': 0, 'w3': 394, 'h3': 130, 'x0': 0, 'x1': -91, 'x2': 91, 'x4': 121, 'x3': 212, 'x5': 303, 'x6': -91, 'x7': 303, 'y0': 0, 'y1': -27.5, 'y2': 27.5, 'y3': -65, 'y4': 65, 'y5': -65, 'y6': 65, 'y7': 0, 'y8': 0, 'x9': 333, 'x11': 519, 'x10': 426}, 'c_0': {'v': "as\n$f['a']\n:c1", 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 0, 'h2': 0, 'w2_add': 0, 'h4': 0, 'w4': 0, 'w4_add': 0, 'w3': 182, 'h3': 55, 'x0': 212, 'x1': 121, 'x2': 303, 'x4': 333, 'x3': 333, 'x5': 333, 'x6': 121, 'x7': 333, 'y0': -37.5, 'y1': -65, 'y2': -10, 'y3': -37.5, 'y4': -37.5, 'y5': -65, 'y6': -10, 'y7': -37.5, 'y8': -37.5, 'x9': 363, 'x11': 549, 'x10': 456}, 'c_1': {'v': "as\n$f['b']\n:c2", 'show': 1, 'sur': 0, 'w1': 182, 'h1': 55, 'w2': 0, 'h2': 0, 'w2_add': 0, 'h4': 75, 'w4': 0, 'w4_add': 0, 'w3': 182, 'h3': 55, 'x0': 212, 'x1': 121, 'x2': 303, 'x4': 333, 'x3': 333, 'x5': 333, 'x6': 121, 'x7': 333, 'y0': 37.5, 'y1': 10, 'y2': 65, 'y3': 37.5, 'y4': 37.5, 'y5': 10, 'y6': 65, 'y7': 0, 'y8': 75, 'x9': 363, 'x11': 549, 'x10': 456}}, 'struct': {'root': ['c_0', 'c_1'], 'c_0': [], 'c_1': []}, 'opts': {'cNO': 14, 'offset_x': 191, 'offset_y': 115, 'width': 1022, 'height': 800, 'isalive': 1, 'active_node': 0}}
-    xmldata = {"a": 1, "b": 2}
-    ct = calcTree().from_treeinfo(data)
+    import json
+    with open("/home/lsy/Downloads/pd01 (13).mdc", "r") as f:
+        x1 = f.read()
+    with open("/home/lsy/vue_tutorial/flask/sample/sample_od_PID2021010200033947.json", "r") as f:
+        x2 = f.read()
+    treedata = json.loads(x1)
+    xmldata = json.loads(x2)
+    ct = calcTree().from_treeinfo(treedata)
     ct.nodes["root"].receive({"err": "", "eroute": "",
                               "route": [], 
                               "name": "", "data": xmldata})
+    import datetime
+    print(datetime.datetime.now())
+    res = ct.nodes["root"]. iter(use_stack=False)
+    res1 = list(res)
+    res1[0]
+    print(datetime.datetime.now())
 
-    ct.nodes["root"]. stack[0]
-    ct.nodes["c_0"]. stack[0]
-    ct.nodes["c_0"]. ci.name
-    dir(ct.nodes["c_0"]. ci    )
-    ct.nodes["c_0"]. id
 
 
-
-    ##    return {"data": self.toData,
-    ##            "route": self.route,
-    ##            "id": self.id,
-    ##            "name": self.ci.name, 
-    ##            "err": self.err,
-    ##            "eroute": self.eroute,
-    ##            }
-    

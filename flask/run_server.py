@@ -87,6 +87,7 @@ def code():
     try:
         try:
             ti = tm.getTreeInfo()
+            print(ti)
             toDataDict = {i:j.toData for i, j in ti.tree.nodes.items() if hasattr(j, 'toData')}
             fromDataDict = {i:j.fromData for i, j in ti.tree.nodes.items() if hasattr(j, 'fromData')}
             if __context["node"] != 0:

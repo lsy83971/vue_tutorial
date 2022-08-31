@@ -195,3 +195,23 @@ r = requests.post(url, data=msg, headers=headers)
 pd.Series(json.loads(r.text))
 
 
+import pandas as pd
+def gg():
+    global c
+    def c():
+        return 3
+
+gg()
+
+    
+global a
+import pandas as a
+a
+
+
+
+
+global pd,np,Iterable
+import pandas as pd
+import numpy as np
+from collections.abc import Iterable
