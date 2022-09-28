@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 import traceback
 import pandas as pd
@@ -5,19 +6,16 @@ import numpy as np
 import uuid
 import os
 from copy import deepcopy
-from flask_cors import CORS, cross_origin
 import ast
 from flask import Flask, session
 from flask import render_template_string, render_template
 from flask import request
 import json
-sys.path.append("/home/lsy/Project/vue_tutorial/flask/")
-
-MODEL_PATH = "/home/lsy/Project/vue_tutorial/flask/models/"
 
 
 import re
 re_month = re.compile("\d{4}-\d{2}")
+
 tkey = 'month'
 
 def j2df(x):
@@ -42,7 +40,7 @@ def sx(x):
 def ak(x):
     return x[tkey]["AUC_KS"]
 
-
+MODEL_PATH = "/home/lsy/Project/vue_tuto/models/"
 def get_models():
     models = os.listdir(MODEL_PATH)
     models = [i for i in models if ".pkl" in i]
@@ -50,9 +48,21 @@ def get_models():
 
 from copy import deepcopy
 
+
+
+
 class reformDict:
+    """
+    reform a dict
+    change the raw pattern of the report
+    see `rf_config` for more information.
+    """
     @staticmethod
     def setkey(target, keys, value):
+        """
+        `keys` is a list
+        set value to the `keys`-treepath of target
+        """
         key = keys[0]
         if len(keys) == 1:
             target[key] = value
@@ -65,6 +75,12 @@ class reformDict:
         self.config= d
 
     def reform(self, d):
+        """
+        1.replace: use d[i] inplace d
+        2.delete: del d[i]
+        3.reform: set d[*keys] to d[i]
+        """
+        
         if not isinstance(d, dict):
             return d
         i_list = deepcopy(list(d.keys()))
@@ -83,8 +99,6 @@ class reformDict:
                 self.setkey(d, self.config["reform"][i], value)
                 continue
             d[i] = value
-            
-            
         return d
 
 def j2df(x):
@@ -148,10 +162,18 @@ def choose(order, name):
     raise Exception("No Item")
 
 class node:
+    """
+    all the things in each step
+    `name`: value from ('MODEL','TYPE1','TYPE2','IDX','CHANNEL')
+    `self.ops_next`: a dict that enter a key to find the next node.
+    `self.node_next`: find next node
+    `self.fit`: initialize
+    `self.fit_next`: initialize the next nodes; usually first decide the ops,
+    then do the fit for each op.
+    """
     def __init__(self, name):
         self.name = name
         self.ops_next = dict()
-
 
     def node_next(self, order):
         if isinstance(self.ops, list):
@@ -170,13 +192,20 @@ class node:
         
     def fit(self, data, order):
         """
-        规定有哪些选项 包括后续
+        feed the data
+        knows the ops of the node
         """
         raise
     def select(self, data, order):
+        """
+        from the `order`, select the proper part of `data`
+        """
         raise
 
     def fit_next(self, data, order):
+        """
+        fit the ops for the next step
+        """
         pass
 
 
@@ -347,6 +376,12 @@ class OrderRoute():
         self.nm = nm
 
     def select(self, order, point='', render=False):
+        """
+        `render`: bool, if need take out the dataframe or not,
+        `point`: nodename of ('MODEL','TYPE1','TYPE2',...)
+        if not render return (order,None)
+        if render return (order,data)
+        """
         if point in ["CHANNEL", "IDX"]:
             return order, None
 
@@ -364,15 +399,19 @@ class OrderRoute():
             need_finish = True
         
         while True:
+
+            ## get the options
             ops_dict = node.ops_dict()
             for name, ops in ops_dict.items():
                 i1 = choose(new_order, name)
                 i1["ops"] = ops
                 i1["active"] = True
 
+            ## finish at this option
             if need_finish:
                 return new_order, None
 
+            ## check if the order in the node's ops
             selectactive = True
             for name, ops in ops_dict.items():
                 i = choose(order, name)
@@ -383,15 +422,19 @@ class OrderRoute():
                 if (i["active"] is False) or (i["select"] not in ops):
                     selectactive = False                    
                     break
+
+            ## if not selectactive return new_order,None
             if selectactive is False:
                 return new_order, None
 
+            ## if selectactive copy the choose from original order to new order
             if selectactive is True:
                 for name, ops in ops_dict.items():
                     i = choose(order, name)
                     i1 = choose(new_order, name)
                     i1["select"] = i["select"]
 
+            ## check if we need finish the step
             if point == name:
                 need_finish = True
 
@@ -401,6 +444,8 @@ class OrderRoute():
                     return new_order, None
                 else:
                     return new_order, node.select(data, order)
+
+            ## update data,node,name
             data = node.select(data, order)            
             node = new_node
             name = node.name
@@ -410,6 +455,8 @@ class OrderRoute():
 
 
 odr = OrderRoute()
+
+
 
 ## raw_order = [{"name": "MODEL", "active": True, "select": 'ZYD_XYFR_TYZXMODELSCORE_score.pkl'},
 ## {"name": "TYPE1", "active": True, "select": '用信'},
@@ -424,7 +471,6 @@ odr = OrderRoute()
 # sb = odr.select(raw_order, "", True)
 
 def select():
-    print("TANKS!!")
     data = json.loads(request.data)
     o, df = odr.select(data["o"], data["p"])
     return json.dumps(o)
@@ -507,6 +553,7 @@ def parsedf(df, idx=None):
                      else str(x))
     _d = df.astype(str).to_json(orient='records')
     return json.dumps({"col": _c, "data": _d, "type": _typedict1})
+
 
 if __name__ == "__main__":
     app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")

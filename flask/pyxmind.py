@@ -25,7 +25,7 @@ class codeParser:
             self.h1 = ''
         else:
             self.h1 = hs[1]
-        assert (self.h0 in ['as', 'copy', 'raw', 'iter', 'null'])
+        assert (self.h0 in ['as', 'copy', 'raw', 'iter', 'null', "once"])
         assert (self.h1 in ['id', ''])
         
 
@@ -114,6 +114,8 @@ class calcNode:
         self.sur = info['sur']
         self.ci = codeParser(self.rawcode)
         self.ci.parse()
+        if self.ci.h0 == "once":
+            self.done_once = False
         return self
 
     def result(self):
@@ -190,9 +192,9 @@ class calcNode:
         else:
             try:
                 exec(code)
-                if tp not in ["iter", "null"]:
+                if tp not in ["iter", "null", 'once']:
                     assert hasattr(self, "toData")
-                if tp == "null":
+                if tp in ["null", 'once']:
                     self.toData = "null iter"
                 self.err = ""
                 self.eroute = ""
@@ -210,11 +212,21 @@ class calcNode:
         """
         tp = self.ci.h0
         code = self.ci.code
+        if tp == "once":
+            if self.done_once:
+                return 
+        
         self.exec()
         if tp == "null":
             if self.attr._use_stack:
                 self.stack.append(self.result())
             return
+
+        if tp == "once":
+            if self.attr._use_stack:
+                self.stack.append(self.result())
+                self.done_once = True
+                return
         
         if tp != "iter":
             yield self.result_point()

@@ -10,11 +10,10 @@ from flask import Flask, session
 from flask import render_template_string, render_template
 from flask import request
 import json
-app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")
-app.config['SECRET_KEY'] = os.urandom(24)
 
-######################################################
+sys.path.append("/home/lsy/project/vue_tutorial/flask/")
 
+from pyxmind_tools import name_trans
 from pyxmind import calcTree, result_parse
 from pdform import pd2json, pd2str, beautify, abbrStr
 
@@ -118,43 +117,62 @@ def code():
         output = "Error:\n" + traceback.format_exc()
         return {"output": output}
 
-def tree():
-    data = json.loads(request.data)
-    ti = tm.getTreeInfo()
-    ti.cleartree()
-    ct = calcTree().from_treeinfo(data)
-    ti.loadtreedata(data)
-    ti.loadtree(ct)
-    res = {"err": "",
-           "eroute": "",
-           "route": [], 
-           "name": "",
-           "data": ti.getdata()}
-    
-    ct.nodes["root"].receive(res)
-    ##print([i for i in ct.nodes["root"]. iter()])
-    #res = deepcopy([i for i in ct.nodes["root"]. iter()])
-    res = [i for i in ct.nodes["root"]. iter()]
 
-    #node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
-    node_res = {i:j.stack for i, j in ct.nodes.items()}
-
+def add_cnen(res, ct):
+    """
+    CARE:
+    change the origin meaning of route and name
+    """
+    if isinstance(res, dict):
+        res = [j for i in res.values() for j in i]
     for i in res:
-        result_parse.verr(i)
-        i["data"] = beautify(i["data"])
-        i["name_abbr"] = abbrStr(i["name"])
-        
-    for j in node_res.values():
-        for i in j:
-            result_parse.verr(i)            
+        i["id_concat"] = "$$". join(i["route"])
+
+    nt = name_trans([i["id_concat"] for i in res], ct)
+    for i in res:
+        i["en"] = nt.map_en[i["id_concat"]]
+        i["cn"] = nt.map_cn[i["id_concat"]]
+    
+def tree():
+    try:
+        data = json.loads(request.data)
+        ti = tm.getTreeInfo()
+        ti.cleartree()
+        ct = calcTree().from_treeinfo(data)
+        ti.loadtreedata(data)
+        ti.loadtree(ct)
+        res = {"err": "",
+               "eroute": "",
+               "route": [], 
+               "name": "",
+               "data": ti.getdata()}
+
+        ct.nodes["root"].receive(res)
+        ##print([i for i in ct.nodes["root"]. iter()])
+        #res = deepcopy([i for i in ct.nodes["root"]. iter()])
+        res = [i for i in ct.nodes["root"]. iter()]
+
+        #node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
+        node_res = {i:j.stack for i, j in ct.nodes.items()}
+
+        add_cnen(res, ct)
+        add_cnen(node_res, ct)    
+
+        for i in res:
+            result_parse.verr(i)
             i["data"] = beautify(i["data"])
             i["name_abbr"] = abbrStr(i["name"])
-            
-    tr = {"res": res, "node_res": node_res}
-    ##tr_str = pd2str(tr)
-    #print("tree info:")
-    #exec("""print(ti.tree.nodes)""")
-    #print(ti.tree.nodes['root']. stack)
+
+        for j in node_res.values():
+            for i in j:
+                result_parse.verr(i)            
+                i["data"] = beautify(i["data"])
+                i["name_abbr"] = abbrStr(i["name"])
+
+        tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res}
+    except:
+        errinfo = "Error:\n" + traceback.format_exc()
+        tr = {"error": 1, "errorinfo": errinfo}
     
     return json.dumps(tr)
 
@@ -165,13 +183,13 @@ def revert():
 
 
 ## app.add_url_rule("/", "init", init, methods=["GET", "POST"])
-app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
-app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
-app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
-app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
-
-app.add_url_rule("/flask/revert", "revert", revert, methods=["GET", "POST"])
 
 if __name__ == "__main__":
+    app = Flask(__name__, template_folder='./',static_folder="",static_url_path="/")
+    app.config['SECRET_KEY'] = os.urandom(24)
+    app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
+    app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
+    app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
+    app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
+    app.add_url_rule("/flask/revert", "revert", revert, methods=["GET", "POST"])
     app.run(host="127.0.0.1", port=5005, debug=True)
-    #app.run(host="127.0.0.1", port=5005, debug=False)

@@ -150,8 +150,8 @@
     <thead>
 	<tr>
           <th style='width:10%;text-align:left'>id</th>
-          <th style='width:10%;text-align:left'>name</th>
-          <th style='width:20%;text-align:left'>route</th>	  
+          <th style='width:10%;text-align:left'>en_name</th>
+          <th style='width:20%;text-align:left'>cn_name</th>	  
           <th style='width:60%;text-align:left'>result</th>		  
 	</tr>
       </thead>
@@ -164,8 +164,9 @@
 	      <td style='text-align:left'
 		  @click='ActiveOn(node.id,true)'
 		  >{{node.id}}</td>
-	      <td style='text-align:left'>{{node.name_abbr}}</td>	  
-	      <td style='text-align:left'>{{node.route}}</td>
+	      <td style='text-align:left'>{{node.en}}</td>
+	      <td style='text-align:left'>{{node.cn}}</td>	  	      
+	      <!--td style='text-align:left'>{{node.route}}</td-->
 	      <td style='text-align:left'>{{node.data.b_data}}</td>	    	      
 	    </tr>
 	  </template>
@@ -179,8 +180,8 @@
       <thead>
 	<tr>
           <th style='width:10%;text-align:left'>id</th>
-          <th style='width:10%;text-align:left'>name</th>
-          <th style='width:20%;text-align:left'>route</th>	  
+          <th style='width:10%;text-align:left'>en_name</th>
+          <th style='width:20%;text-align:left'>cn_name</th>	  
           <th style='width:60%;text-align:left'>result</th>		  
 	</tr>
       </thead>
@@ -190,8 +191,9 @@
 	    <td style='text-align:left'
 		@click='ActiveOn(node.id,true)'		
 		>{{node.id}}</td>
-	    <td style='text-align:left'>{{node.name_abbr}}</td>	  
-	    <td style='text-align:left'>{{node.route}}</td>
+	    <td style='text-align:left'>{{node.en}}</td>
+	    <td style='text-align:left'>{{node.cn}}</td>	  	      
+	    <!--td style='text-align:left'>{{node.route}}</td-->
 	    <td style='text-align:left'>{{node.data.b_data}}</td>	    
 	  </tr>
 	</template>
@@ -391,7 +393,7 @@ var opts={
     expandsize:14,
     node:{
 	v:'as $f',
-	rawname:'',
+	rawname:':none',
 	onshow:'v',
 	show:1,
 	sur:0,
@@ -766,11 +768,16 @@ export default {
 		var s=this.IOTreeInfo();
 		this.opts.active_result_node=0;
 		utils.post('flask/tree',s,(response => {
-		    pxy.node_res=response.data['node_res'];
-		    pxy.res=response.data['res'];
-		    pxy.CountErr();
-		    pxy.CountChdErr();
-		    alert("load tree success")
+		    if (response.data['error']==0){
+			pxy.node_res=response.data['node_res'];
+			pxy.res=response.data['res'];
+			pxy.CountErr();
+			pxy.CountChdErr();
+			alert("run tree success")
+		    }else{
+			pxy.code_res=response.data['errorinfo']
+			alert("python raise error; See traceback in codeblock")			
+		    }
 		}))
 	    }catch(err){
 		alert("sendTreeErr:"+err.message)
@@ -1040,8 +1047,9 @@ export default {
 		    this.info[i].rawname=""
 		}
 		if (this.info[i].rawname==""){
-		    this.info[i].name=i
-		    this.info[i].rawname=i
+		    //this.info[i].name=i
+		    //this.info[i].rawname=i
+		    this.info[i].name=this.info[i].rawname;		    
 		}else{
 		    this.info[i].name=this.info[i].rawname;
 		}
@@ -1297,6 +1305,9 @@ export default {
 	pasteNode(t){
 	    this.copyPasteNode(this.cpnode,t)
 	},
+	pasteSurNode(t){
+	    this.copyPasteSurNode(this.cpnode,t)
+	},
 	copyPasteNode(f,t){
 	    var cpinfo=this.GetDescendantSurTree(f)
 	    Object.assign(this.struct,cpinfo["struct"])
@@ -1311,6 +1322,23 @@ export default {
 		    $g(k).style.height=old_info[k].h1+"px"
 		}
 	    })
+	},
+	copyPasteSurNode(f,t){
+	    if (this.info[t].sur==0){
+		var cpinfo=this.GetDescendantSurTree(f)
+		Object.assign(this.struct,cpinfo["struct"])
+		Object.assign(this.info,cpinfo["info"])
+		this.info[t].sur=cpinfo["namemap"][f]		
+		var old_info=structuredClone(cpinfo["info"])
+		this.WatchThis();
+		this.$nextTick(() => {
+		    this.SetThis();
+		    for (let k in old_info){
+			$g(k).style.width=old_info[k].w1+"px"
+			$g(k).style.height=old_info[k].h1+"px"
+		    }
+		})
+	    }		
 	},
 	contextNode(n){
 	    this.context={"node":n}
@@ -1808,7 +1836,11 @@ export default {
 		this.copyNode(id)
 		break;
 	    case 80: // P paste
-		this.pasteNode(id)
+		if (event.shiftKey){
+		    this.pasteSurNode(id)		    		    
+		}else{
+		    this.pasteNode(id)		    
+		}
 		break;
 	    case 83: //S
 		var nodeid=this.AddSurNode(id);

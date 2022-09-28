@@ -216,5 +216,5 @@ import pandas as pd
 import numpy as np
 from collections.abc import Iterable
 
+global a
 
-pd.to_datetime(['20220202', '20220203', '-9999'], errors='coerce')
