@@ -285,10 +285,11 @@ class calcNode:
                 n.receive(j)
                 yield from n.iter()
         
-    def iter(self):
+    def iter(self, use_stack=True):
         """
         step2
         """
+        self.m._use_stack = use_stack
         tp = self.ci.h0
         tp1 = self.ci.h1
         if tp == "off":

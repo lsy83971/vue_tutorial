@@ -2,8 +2,11 @@ import json
 import copy
 import sys
 import pandas as pd
-sys.path.append("/home/bozb/notebook/lsy/RELEASE/model_viewer/vue_tutorial-thankgod/dist/flask/")
+sys.path.append("/home/bozb/lsy/RELEASE/model_server/flask/")
+from SFTP.load import xml_manager
+from SFTP.xml_struct import xml_struct
 from pyxmind import *
+from datetime import datetime
 
 def read_mdc(file_name):
     with open(file_name, "r") as f:
@@ -14,6 +17,7 @@ def read_mdc(file_name):
 
 def res_target(target, ct, t_res = None, update = False, v = False):
     ct._use_stack = False
+    print(ct._use_stack)
     s1 = xml_manager()
     if t_res is None:
         newobj = True
