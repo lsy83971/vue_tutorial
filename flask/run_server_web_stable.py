@@ -11,17 +11,16 @@ from flask import Flask, session
 from flask import render_template_string, render_template
 from flask import request
 import json
-
-sys.path.append("/home/lsy/Project/vue_tutorial/flask/")
-
 # 任务是建立单机版的调试器
 # simple way
 # 一切从简单 但是预留扩展空间
-
 from run_server import loaddata, tree, code, clear, revert
 from run_server_model_view import select, render
 
+
+
 if __name__ == "__main__":
+    os.chdir("../dist")    
     def home():
         return render_template("index.html")
     

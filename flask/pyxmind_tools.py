@@ -3,8 +3,11 @@ import copy
 import sys
 import pandas as pd
 sys.path.append("/home/bozb/lsy/RELEASE/model_server/flask/")
-from SFTP.load import xml_manager
-from SFTP.xml_struct import xml_struct
+try:
+    from SFTP.load import xml_manager
+    from SFTP.xml_struct import xml_struct
+except:
+    pass
 from pyxmind import *
 from datetime import datetime
 
