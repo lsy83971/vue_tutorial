@@ -1,5 +1,9 @@
-from pyxmind import calcNode
+from pyxmind import calcNode, raw_macro
 class clacNodeOutput(calcNode):
+    def __init__(self, macro=raw_macro):
+        super().__init__(macro = macro)
+        self.output = ""
+    
     def result(self):
         res = super().result()
         res["output"] = self.output

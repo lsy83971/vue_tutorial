@@ -6,12 +6,14 @@ import uuid
 import os
 from copy import deepcopy
 import ast
-from flask import Flask, session
+from flask import Flask, session, jsonify
 from flask import render_template_string, render_template
 from flask import request
 import json
 
+#sys.path.append("/home/lsy/project/vue_tutorial/flask/")
 sys.path.append("/home/lsy/project/vue_tutorial/flask/")
+
 
 from pyxmind_tools import name_trans
 from pyxmind import calcTree, result_parse, raw_macro
@@ -108,6 +110,8 @@ def code():
     __d = json.loads(request.data)
     __code = __d["code"]
     __context = __d["context"]
+    print(__code)
+    print(__d)
     try:
         try:
             ti = tm.getTreeInfo()
@@ -120,25 +124,24 @@ def code():
                 node = ti.tree.nodes[tmp_node]
         except Exception as e:
             print(e)
-
         mc = tm.getCodeMacro()
         for i, j in mc.items():
             __code = __code.replace(i, j)
-            
+        print(__code)
         __block = ast.parse(__code, '''tmp''', mode='exec')
         __last = __block.body[-1]
         __isexpr = isinstance(__last,ast.Expr)
         _ = __block.body.pop() if __isexpr else None
         exec(compile(__block, '''tmp''', mode='exec'))
+        print(__code)
         output = eval(compile(ast.Expression(__last.value),
                               '''tmp''', mode='eval')) if __isexpr else None
         if not isinstance(output, str):
             output = output.__repr__()
-        return {"output": output}
+        return jsonify({"output": output})
     except Exception as e:
         output = "Error:\n" + traceback.format_exc()
-        return {"output": output}
-
+        return jsonify({"output": output})
 
 def add_cnen(res, ct):
     """
