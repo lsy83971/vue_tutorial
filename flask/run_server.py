@@ -14,16 +14,29 @@ import json
 sys.path.append("/home/lsy/project/vue_tutorial/flask/")
 
 from pyxmind_tools import name_trans
-from pyxmind import calcTree, result_parse
+from pyxmind import calcTree, result_parse, raw_macro
+from pyxmind_output import clacNodeOutput
 from pdform import pd2json, pd2str, beautify, abbrStr
 
+code_macro = {"$fd" :"fromDataDict", 
+              "$td" :"toDataDict", 
+              "$nd" :"ti.tree.nodes", 
+              "$f" :"fromData", 
+              "$t" :"toData", 
+              "$n" :"node", 
+              "$g" :"ti.tree.attr", }
+
+
+          
 class treeUserManager:
     def __init__(self):
         self.treeInfos = dict()
+        self.code_macro = dict()
+        self.tree_macro = dict()        
 
     def create_treeInfo(self, force=False):
-        print("usename:")
-        print(session.get("username"))
+        ## print("usename:")
+        ## print(session.get("username"))
         if force is True:
             session["username"] = uuid.uuid4()
             self.treeInfos[session["username"]] = treeInfo()
@@ -31,11 +44,20 @@ class treeUserManager:
             if session.get("username", None) is None:
                 session["username"] = uuid.uuid4()
                 self.treeInfos[session["username"]] = treeInfo()
+                self.code_macro[session["username"]] = code_macro.copy()
+                self.tree_macro[session["username"]] = raw_macro.copy()
 
     def getTreeInfo(self):
         self.create_treeInfo()
         return self.treeInfos[session["username"]]
 
+    def getCodeMacro(self):
+        self.create_treeInfo()
+        return self.code_macro[session["username"]]
+
+    def getTreeMacro(self):
+        self.create_treeInfo()
+        return self.tree_macro[session["username"]]
     
 class treeInfo:
     def __init__(self):
@@ -57,7 +79,10 @@ class treeInfo:
         return self.tree
         
     def getdata(self):
-        return self.data
+        if hasattr(self, 'data'):
+            return self.data
+        else:
+            return None
 
 tm = treeUserManager()
 
@@ -86,7 +111,6 @@ def code():
     try:
         try:
             ti = tm.getTreeInfo()
-            print(ti)
             toDataDict = {i:j.toData for i, j in ti.tree.nodes.items() if hasattr(j, 'toData')}
             fromDataDict = {i:j.fromData for i, j in ti.tree.nodes.items() if hasattr(j, 'fromData')}
             if __context["node"] != 0:
@@ -96,13 +120,11 @@ def code():
                 node = ti.tree.nodes[tmp_node]
         except Exception as e:
             print(e)
-        __code = __code.replace("$fd", "fromDataDict")
-        __code = __code.replace("$td", "toDataDict")
-        __code = __code.replace("$nd", "ti.tree.nodes")        
-        __code = __code.replace("$f", "fromData")
-        __code = __code.replace("$t", "toData")
-        __code = __code.replace("$n", "node")
-        __code = __code.replace("$g", "ti.tree.attr")                      
+
+        mc = tm.getCodeMacro()
+        for i, j in mc.items():
+            __code = __code.replace(i, j)
+            
         __block = ast.parse(__code, '''tmp''', mode='exec')
         __last = __block.body[-1]
         __isexpr = isinstance(__last,ast.Expr)
@@ -137,8 +159,11 @@ def tree():
     try:
         data = json.loads(request.data)
         ti = tm.getTreeInfo()
+        tmacro = tm.getTreeMacro()
         ti.cleartree()
-        ct = calcTree().from_treeinfo(data)
+        ct = calcTree(_node_cls=clacNodeOutput,
+                      _macro=tmacro,
+                      ).from_treeinfo(data)
         ti.loadtreedata(data)
         ti.loadtree(ct)
         res = {"err": "",
@@ -146,12 +171,10 @@ def tree():
                "route": [], 
                "name": "",
                "data": ti.getdata()}
-
         ct.nodes["root"].receive(res)
         ##print([i for i in ct.nodes["root"]. iter()])
-        #res = deepcopy([i for i in ct.nodes["root"]. iter()])
+        ##res = deepcopy([i for i in ct.nodes["root"]. iter()])
         res = [i for i in ct.nodes["root"]. iter()]
-
         #node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
         node_res = {i:j.stack for i, j in ct.nodes.items()}
 
@@ -169,7 +192,8 @@ def tree():
                 i["data"] = beautify(i["data"])
                 i["name_abbr"] = abbrStr(i["name"])
 
-        tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res}
+        output = {i:j.output for i, j in ct.nodes.items()}
+        tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res, "output": output}
     except:
         errinfo = "Error:\n" + traceback.format_exc()
         tr = {"error": 1, "errorinfo": errinfo}

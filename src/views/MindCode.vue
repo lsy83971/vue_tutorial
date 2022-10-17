@@ -19,7 +19,7 @@
 	      @click='FlaskSendCode()'>sendcode</button>
       <button class="btn btn-primary"
 	      data-bs-toggle="collapse"
-	      href="#multiCollapseExample2"
+n	      href="#multiCollapseExample2"
 	      role="button"	    
 	      >Editor</button>
     </p>
@@ -77,15 +77,17 @@
     <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
     <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
     <li class="breadcrumb-item"><a @click="changeonshow('rawname')">NAME</a></li>
+    <li class="breadcrumb-item"><a @click="changeonshow('output')">OUTPUT</a></li>    
     <li class="breadcrumb-item">N:</li>
     <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">CODE</a></li>
     <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
     <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">NAME</a></li>
+    <li class="breadcrumb-item"><a @click="changeNodeonshow('output')">OUTPUT</a></li>        
     <li class="breadcrumb-item"><a @click="ActiveOn(context.node)">CTX: {{context.node}}</a></li>
     <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">FOCUS: {{anodeInfo()}}</a></li>
     <li class="breadcrumb-item">ERR: {{nodeiserr()}}</li>
     <li class="breadcrumb-item">ERRSUB: {{chderr()}}</li>
-    <li class="breadcrumb-item">ERR-T: {{totalerr()}}</li>
+    <li class="breadcrumb-item">ERRT: {{totalerr()}}</li>
     <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
     <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
     <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
@@ -394,6 +396,7 @@ var opts={
     node:{
 	v:'as $f',
 	rawname:':none',
+	output:'',
 	onshow:'v',
 	show:1,
 	sur:0,
@@ -552,7 +555,7 @@ export default {
 	$g('jsm_canvas').style.left='0px'
 	$g('jsm_canvas').style.right='0px'
 	pxy = this;
-	$c("GGG")
+	//$c("GGG")
 	editor = ace.edit("code_editor");
 	//editor.setTheme("ace/theme/monokai");
 	editor.session.setMode("ace/mode/python");
@@ -678,7 +681,14 @@ export default {
 		if (nodeid==name){
 		    return nodeid
 		}else{
-		    return nodeid+' | '+name
+		    //$c(name)
+		    pxy.name=name
+		    if (name.length>15){
+			return nodeid+' | '+name.substring(0,15)+'...'
+		    }else{
+			return nodeid+' | '+name		
+		    }
+		    //
 		}
 	    }else{
 		return '0'
@@ -771,8 +781,12 @@ export default {
 		    if (response.data['error']==0){
 			pxy.node_res=response.data['node_res'];
 			pxy.res=response.data['res'];
+			pxy.nodeOutput=response.data['output'];
 			pxy.CountErr();
 			pxy.CountChdErr();
+			for (let i in pxy.info){
+			    pxy.info[i].output=pxy.nodeOutput[i]
+			}
 			alert("run tree success")
 		    }else{
 			pxy.code_res=response.data['errorinfo']

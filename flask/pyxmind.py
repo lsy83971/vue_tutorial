@@ -2,10 +2,20 @@ import traceback
 from copy import deepcopy
 ## TODO: OFF delete
 ## TODO:
+
+raw_macro = {
+    "$f":  "self.fromData", 
+    "$t": "self.toData", 
+    "$n": "self", 
+    "$r": "self.root.fromData", 
+    "$i": "self.iterfunc", 
+    "$g": "self.attr", 
+}
+
+        
 class codeParser:
     def __init__(self, rawcode):
         self.rawcode = rawcode
-
 
     def parseType(self):
         res = dict()
@@ -37,7 +47,7 @@ class codeParser:
         self.h = self.headers[0]
         self.parseType()
         
-    def parse(self):
+    def parse(self, macro):
         rawcode = self.rawcode
         lines = rawcode.split('\n')
         foot = lines[ - 1]. strip()
@@ -63,21 +73,19 @@ class codeParser:
             code = f'{code}\n$t=$f'
         if self.h0 in ["raw", "iter"]:
             code = code
-            
-        code = code.replace("$f", "self.fromData")
-        code = code.replace("$t", "self.toData")
-        code = code.replace("$n", "self")
-        code = code.replace("$r", "self.root.fromData")
-        code = code.replace("$i", "self.iterfunc")
-        code = code.replace("$g", "self.attr")
+
+        for i, j in macro.items():
+            code = code.replace(i, j)
+
         self.code = code
         if not hasattr(self, "name"):
             self.name = self.code
 
         
 class calcNode:
-    def __init__(self):
+    def __init__(self, macro=raw_macro):
         self.stack = list()
+        self.macro = macro
 
     def clear(self):
         self.stack = []
@@ -113,7 +121,7 @@ class calcNode:
         self.name = info['name']        
         self.sur = info['sur']
         self.ci = codeParser(self.rawcode)
-        self.ci.parse()
+        self.ci.parse(self.macro)
         if self.ci.h0 == "once":
             self.done_once = False
         return self
@@ -323,9 +331,12 @@ class attr(dict):
         super().__setattr__(name, value)
             
 class calcTree:
-    def __init__(self):
+    def __init__(self, _use_stack = True, _node_cls=calcNode, _macro=raw_macro):
         super().__init__()
         self.attr = attr()
+        self._node_cls = _node_cls
+        self._use_stack = _use_stack
+        self._macro = _macro
 
     def from_treeinfo(self, tree):
         self.info = tree['info']
@@ -340,7 +351,7 @@ class calcTree:
                 "code": j["v"], 
                 "chd": self.struct[i], 
                 "sur": j["sur"]}
-            n = calcNode().from_nodeinfo(nodeinfo)
+            n = self._node_cls(macro=self._macro).from_nodeinfo(nodeinfo)
             self.nodes[i] = n
 
         for i, j in self.nodes.items():
@@ -364,7 +375,7 @@ if __name__ == "__main__":
                               "name": "", "data": xmldata})
     import datetime
     print(datetime.datetime.now())
-    res = ct.nodes["root"]. iter(use_stack=False)
+    res = ct.nodes["root"]. iter()
     res1 = list(res)
     res1[0]
     print(datetime.datetime.now())
