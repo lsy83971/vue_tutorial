@@ -105,7 +105,7 @@
 </div>
 
 <div id='jsm_outer'
-     style="width:99%;height:calc(95vh - 160px);
+     style="width:99%;height:calc(95vh - 80px);
       	    border-style:solid;
       	    margin:5px
       	    ">
@@ -157,7 +157,7 @@
     </div>
   </div>
 
-  <h3 style='text-align:left'>stack table:</h3>
+  <h5 style='text-align:left'>stack table:</h5>
   <table class="table table-striped">  
     <thead>
 	<tr>
@@ -187,7 +187,7 @@
   </table>
 
 
-    <h3 style='text-align:left'>result table:</h3>
+    <h5 style='text-align:left'>result table:</h5>
     <table class="table table-striped">
       <thead>
 	<tr>
@@ -931,6 +931,14 @@ export default {
 		if (!pxy.opts.color_mode){
 		    pxy.opts.color_mode='code'
 		}
+
+		// add options for show_code_select
+		pxy.opts.show_code_opts=['node','child','global'];
+		if (!pxy.opts.show_code_select){
+		    pxy.opts.show_code_select='global'
+		}
+
+		
 		pxy.$nextTick(			    () => {
 		    for (let i in pxy.info){
 			$g(i).style.width=d1.info[i].w1+"px"
