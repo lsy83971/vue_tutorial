@@ -20,7 +20,9 @@
 }
 
 nav {
-  padding: 10px;
+    padding: 10px;
+    padding-top: 7px;
+    padding-bottom: 3px;  
 }
 
 nav a {
