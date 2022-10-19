@@ -36,7 +36,7 @@ class codeParser:
         else:
             self.h1 = hs[1]
         assert (self.h0 in ['as', 'copy', 'raw', 'iter', 'null', "once"])
-        assert (self.h1 in ['id', ''])
+        assert (self.h1 in ['id', '',  'nomacro'])
         
 
     def parseHead(self):
@@ -74,8 +74,9 @@ class codeParser:
         if self.h0 in ["raw", "iter"]:
             code = code
 
-        for i, j in macro.items():
-            code = code.replace(i, j)
+        if self.h1 != "nomacro":
+            for i, j in macro.items():
+                code = code.replace(i, j)
 
         self.code = code
         if not hasattr(self, "name"):

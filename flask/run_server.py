@@ -195,8 +195,16 @@ def tree():
                 i["data"] = beautify(i["data"])
                 i["name_abbr"] = abbrStr(i["name"])
 
-        output = {i:j.output for i, j in ct.nodes.items()}
+        output = dict()
+        for i, j in ct.nodes.items():
+            if isinstance(j.output, str):
+                output[i] = j.output
+            else:
+                output[i] = j.output.__repr__()
+        print(output)
         tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res, "output": output}
+        json.dumps(tr)
+        
     except:
         errinfo = "Error:\n" + traceback.format_exc()
         tr = {"error": 1, "errorinfo": errinfo}
