@@ -1,29 +1,62 @@
 <template>
 <div style='overflow:auto;margin-left:5px'>  
   <div style='float:left'>
-    <p style='margin-bottom:3px'>
+    <p style='margin-bottom:3px' id='top_button'>
       <button class="btn btn-primary"
 	      data-bs-toggle="collapse"
 	      href="#multiCollapseExample1"
 	      role="button"	    
-	      >Save Load</button>
-      <button class="btn btn-primary" type="button"	      
+	      >File</button>
+      <button class="btn btn-primary" type="button"
 	      @click='FlaskSendTree()'>Run</button>
-      <button class="btn btn-primary" type="button"	      
-	      @click='FlaskClearTree()'>clear</button>
-      <button class="btn btn-primary" type="button" 
-	      @click='RevertTree()'>revert</button>
-      <button class="btn btn-primary" type="button" 
-	      @click='showcode()'>code</button>
-      <button class="btn btn-primary" type="button" 
-	      @click='FlaskSendCode()'>sendcode</button>
+      <!-- button class="btn btn-primary" type="button"	      
+	      @click='FlaskClearTree()'>clear</button -->
+      <button class="btn btn-primary" type="button"
+	      @click='RevertTree()'>Recover</button>
+      <!-- button class="btn btn-primary" type="button" 
+	      @click='showcode()'>code</button-->
       <button class="btn btn-primary"
 	      data-bs-toggle="collapse"
-n	      href="#multiCollapseExample2"
+	      href="#multiCollapseExample2"
 	      role="button"	    
-	      >Editor</button>
+	      >Console</button>
+      <button class="btn btn-primary" type="button"
+
+	      @click='FlaskSendCode()'>Send</button>
+
+
+  
     </p>
   </div>
+  <div style='float:left'>
+    <nav aria-label="breadcrumb"
+	 style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
+      <ol class="breadcrumb" style='margin-bottom:0px'>
+	<select
+	  v-model='opts.show_code_select'      
+	  >
+	  <option v-for='(op, idx1) in opts.show_code_opts' :key='idx1' :value="op">{{op}}</option>
+	</select>
+	<li
+	  style='padding-left:5px'
+	  class="breadcrumb-item"><a @click="changeonshow('v')">code</a></li>
+	<li class="breadcrumb-item"><a @click="changeonshow('id')">id</a></li>
+	<li class="breadcrumb-item"><a @click="changeonshow('rawname')">name</a></li>
+	<li class="breadcrumb-item"><a @click="changeonshow('output')">output</a></li>
+
+	<li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">Focus: {{opts.last_active_node}}</a></li>
+	<li class="breadcrumb-item">E:{{nodeiserr()}}</li>
+	<li class="breadcrumb-item">Esub:{{chderr()}}</li>
+	<li class="breadcrumb-item">Etotal:{{totalerr()}}</li>
+	<!-- li class="breadcrumb-item">stacks: {{StaTotal()}}</li -->
+	<li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
+	<li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
+	<li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
+      </ol>
+    </nav>
+  </div>
+
+
 </div>      
 <div class="row">
   <div class="collapse multi-collapse" id="multiCollapseExample1"
@@ -68,32 +101,9 @@ n	      href="#multiCollapseExample2"
       </textarea>
     </div>
   </div>
+  
 </div>
 
-<nav aria-label="breadcrumb"
-     style='padding:5px;padding-left:10px;height:auto;overflow:auto'>
-  <ol class="breadcrumb" style='margin-bottom:0px'> 
-    <li class="breadcrumb-item">GL:</li>
-    <li class="breadcrumb-item"><a @click="changeonshow('v')">CODE</a></li>
-    <li class="breadcrumb-item"><a @click="changeonshow('id')">ID</a></li>
-    <li class="breadcrumb-item"><a @click="changeonshow('rawname')">NAME</a></li>
-    <li class="breadcrumb-item"><a @click="changeonshow('output')">OUTPUT</a></li>    
-    <li class="breadcrumb-item">N:</li>
-    <li class="breadcrumb-item"><a @click="changeNodeonshow('v')">CODE</a></li>
-    <li class="breadcrumb-item"><a @click="changeNodeonshow('id')">ID</a></li>
-    <li class="breadcrumb-item"><a @click="changeNodeonshow('rawname')">NAME</a></li>
-    <li class="breadcrumb-item"><a @click="changeNodeonshow('output')">OUTPUT</a></li>        
-    <li class="breadcrumb-item"><a @click="ActiveOn(context.node)">CTX: {{context.node}}</a></li>
-    <li class="breadcrumb-item"><a @click="ActiveOn(opts.last_active_node)">FOCUS: {{anodeInfo()}}</a></li>
-    <li class="breadcrumb-item">ERR: {{nodeiserr()}}</li>
-    <li class="breadcrumb-item">ERRSUB: {{chderr()}}</li>
-    <li class="breadcrumb-item">ERRT: {{totalerr()}}</li>
-    <li class="breadcrumb-item">Stacks: {{StaTotal()}}</li>
-    <li class="breadcrumb-item">Leaves: {{LeafTotal()}}</li>
-    <li class="breadcrumb-item">Nodes: {{NodeTotal()}}</li>
-    <li class="breadcrumb-item"><a @click="changecolor()">Color</a></li>
-  </ol>
-</nav>
 <div id='jsm_outer'
      style="width:99%;height:calc(95vh - 160px);
       	    border-style:solid;
@@ -504,6 +514,8 @@ export default {
 		"last_active_node":0,
 		"active_result_node":0,
 		"show_code":0,
+		"show_code_opts":['node','child','global'],
+		"show_code_select":'global'
 	    },
 	    isshow:{},
 	    err_chd_cnt:{},
@@ -653,11 +665,38 @@ export default {
 	    this.WatchThis()
 	    this.SetThis()	
 	},
-	changeonshow(i){
+	changeGlobalonshow(i){
 	    for (let j in pxy.info){
 		pxy.info[j].onshow=i
 	    }
 	    this.SetThis();
+	},
+	changeonshow(i){
+	    if (this.opts.show_code_select=='global'){
+		this.changeGlobalonshow(i)
+	    }
+	    if (this.opts.show_code_select=='node'){
+		this.changeNodeonshow(i)
+	    }
+
+	},
+	changeNodeonshowNext(){
+	    var nodeid=this.opts.last_active_node
+	    var i=this.info[nodeid].onshow
+	    var next_i=''
+	    if (i=='v'){
+		next_i='rawname'
+	    }
+	    if (i=='id'){
+		next_i='rawname'
+	    }
+	    if (i=='rawname'){
+		next_i='output'
+	    }
+	    if (i=='output'){
+		next_i='v'
+	    }
+	    this.changeNodeonshow(next_i)
 	},
 	anode(){
 	    if (this.opts.active_node==0){
@@ -800,7 +839,7 @@ export default {
 	},
 	FlaskSendCode(){
 	    var s={'code':editor.getSession().getValue(),
-		   'context':this.context,
+		   'context':{'node':pxy.opts.last_active_node},
 		  }
 	    pxy.code_res="waiting!"
 	    utils.post('flask/code',s,(response => {
@@ -1169,8 +1208,31 @@ export default {
 	},
 	
 	DropNode(i){
+	    if (i=='root'){
+		return 
+	    }
+	    
+	    
 	    var parent=this.parent[i]
 	    var front=this.front[i]
+
+
+
+	    // next node: when delete completed, change active node to it.
+	    var next_active_node=''
+	    if (parent){
+		var pl=this.struct[parent]
+		var index=pl.indexOf(i)
+		if (index!=0){
+		    next_active_node=pl[index-1]
+		}else{
+		    next_active_node=parent
+		}
+	    }else if(font){
+		next_active_node=front		
+	    }
+	    // END
+	    
 	    
 	    $d.activeElement.blur();	    
 	    this.opts.isalive=0
@@ -1210,9 +1272,10 @@ export default {
 			this.SetThisBack(parent)
 			return
 		    }
-		    
 		}
 	    )
+
+	    this.ActiveOn(next_active_node)
 	    
 	},
 	HideNode(i){
@@ -1828,6 +1891,15 @@ export default {
 	    case 9: // tab
 		var nodeid=this.ToggleNode(id);
 		break;
+
+	    case 78: // n
+		this.changeNodeonshowNext()
+		break;
+
+	    case 82:
+		this.FlaskSendTree()
+		break;
+		
 	    case 70: // f
 		this.nodefoldfor(id);
 		break;
@@ -1894,6 +1966,7 @@ export default {
 		    this.downFocus(id);
 		}
 		break;
+
 
 	    case 71: //G
 		//this.resOn(id);
@@ -2056,6 +2129,14 @@ export default {
     /*height:1000px;*/
       overflow:auto;
       float:left;
+  }
+
+  #top_button button{
+      padding-left:6px;
+      padding-right:6px;
+      padding-top:3px;
+      /* margin-right:1px; */
+      padding-bottom:3px;
   }
 
 
