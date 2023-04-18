@@ -1285,7 +1285,7 @@ export default {
 		}else{
 		    next_active_node=parent
 		}
-	    }else if(font){
+	    }else if(front){
 		next_active_node=front		
 	    }
 	    // END
