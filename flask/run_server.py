@@ -129,13 +129,16 @@ def code():
             __code = __code.replace(i, j)
         print(__code)
         __block = ast.parse(__code, '''tmp''', mode='exec')
-        __last = __block.body[-1]
-        __isexpr = isinstance(__last,ast.Expr)
-        _ = __block.body.pop() if __isexpr else None
-        exec(compile(__block, '''tmp''', mode='exec'))
-        print(__code)
-        output = eval(compile(ast.Expression(__last.value),
-                              '''tmp''', mode='eval')) if __isexpr else None
+        if len(__block.body) > 0:
+            __last = __block.body[-1]
+            __isexpr = isinstance(__last,ast.Expr)
+            _ = __block.body.pop() if __isexpr else None
+            exec(compile(__block, '''tmp''', mode='exec'))
+            print(__code)
+            output = eval(compile(ast.Expression(__last.value),
+                                  '''tmp''', mode='eval')) if __isexpr else None
+        else:
+            output = None
         if not isinstance(output, str):
             output = output.__repr__()
         return jsonify({"output": output})

@@ -15,8 +15,8 @@ sys.path.append("/home/lsy/Project/vue_tutorial/flask/")
 
 #MODEL_PATH = "/home/lsy/Project/vue_tutorial/flask/models/"
 #MODEL_PATH = "c:/Users/48944/vue_tutorial/flask/models/"
-MODEL_PATH = "/home/bozb/notebook/lsy/RELEASE/model_server/flask/models/"
-
+#MODEL_PATH = "/home/bozb/notebook/lsy/RELEASE/model_server/flask/models/"
+MODEL_PATH = "/home/lishiyu/vue_tutorial/flask/models/"
 
 import re
 re_month = re.compile("\d{4}-\d{2}")

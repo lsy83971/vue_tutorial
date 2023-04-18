@@ -308,7 +308,7 @@
 // active_node: 0
 // active_result_node: 0 
 // cNO: 1
-// color_mode: "code"
+// colormode: "code"
 // ggg: "a"
 // height: 126
 // isalive: 1 ##
@@ -500,22 +500,33 @@ export default {
 		'c_0': [],
 	    },
 	    opts:{ // search
-		
-		"ggg":'a',
 		"cNO": 1,
 		"offset_x":200,
 		"offset_y":200,
 		"width":opts.width,
 		"height":opts.height,
 		"isalive":1,
-		"color_mode":'code',
+		"colormode":'code',
 		"active_node":0,
 		"active_input_node":0,
 		"last_active_node":0,
 		"active_result_node":0,
 		"show_code":0,
 		"show_code_opts":['node','child','global'],
-		"show_code_select":'global'
+		"show_code_select":'global',
+		cmap:{
+		    code:{
+			default:"black",
+			active:"green",
+			activefunc:"orange",
+		    },
+		    err:{
+			default:"black",
+			active:"green",
+			activefunc:"orange",
+		    }
+		    
+		}
 	    },
 	    isshow:{},
 	    err_chd_cnt:{},
@@ -588,18 +599,56 @@ export default {
 	    this.opts.show_code=1-this.opts.show_code
 	},
 	boxClass(idx){
-	    var o=new Object()
-	    o['readonly']=this.ActiveNodeIs(idx)
-	    o['onalive']=this.ActiveNodeIs(idx)
-	    o['inputBox'+this.info[idx].color]=true
-	    o['inputBox']=true
-	    return o
-	    // return {
-	    //	'readonly': ActiveNodeIs(idx),
-      	    //	'onalive': ActiveNodeIs(idx),
-	    //	('inputBox'+this.info[idx].color): true,
-  	    //}
+	    var style=new Object()
+	    style['inputBox']=true
+	    style['inputBoxblack']=false
+	    style['inputBoxred']=false
+	    style['inputBoxblue']=false
+	    style['inputBoxgreen']=false
+	    
+	    if (this.opts.colormode=="code"){
+		if (idx==this.opts.active_node){
+		    style["inputBoxblue"]=true
+		}else{
+		    if (idx==this.opts.last_active_node){
+			style["inputBoxgreen"]=true
+		    }else{
+			style["inputBoxblack"]=true
+		    }
+		    
+		}
+	    }else{
+		if (this.nodeiserr(idx)){
+		    style["inputBoxred"]=true
+		}else{
+		    if (this.chderr(idx)){
+			style["inputBoxred"]=true
+		    }else{
+			style["inputBoxblack"]=true
+		    }
+		}
+	    }
+	    return style
 	},
+	
+	//boxClass(idx){
+	//    var o=new Object()
+	//    o['readonly']=this.ActiveNodeIs(idx)
+	//    o['onalive']=this.ActiveNodeIs(idx)
+	//    o['inputBoxblack']=false
+	//    o['inputBoxred']=false
+	//    o['inputBoxblue']=false
+	//    o['inputBoxgreen']=false
+	//    o['inputBox']=true
+	//    o['inputBox'+this.info[idx].color]=true
+//
+//	    return o
+//	    // return {
+//	    //	'readonly': ActiveNodeIs(idx),
+//      	    //	'onalive': ActiveNodeIs(idx),
+//	    //	('inputBox'+this.info[idx].color): true,
+//  	    //}
+//	},
 	
 	CountErr(){
 	    pxy.err_cnt=new Object()
@@ -634,14 +683,14 @@ export default {
 	},
 	changecolor(mode){
 	    if (!mode){
-		var old=this.opts.color_mode;
+		var old=this.opts.colormode;
 		if (old=="code"){
 		    mode='err'
 		}else{
 		    mode='code'		    
 		}
 	    }
-	    this.opts.color_mode=mode;
+	    this.opts.colormode=mode;
 	    this.WatchThis();
 	    this.SetThis();	    
 	},
@@ -889,8 +938,8 @@ export default {
 			   this.info=d1.info;
 			   this.struct=d1.struct;
 			   this.opts=d1.opts;
-			   if (!pxy.opts.color_mode){
-			       pxy.opts.color_mode='code'
+			   if (!pxy.opts.colormode){
+			       pxy.opts.colormode='code'
 			   }
 			   pxy.$nextTick(() => {
 			       for (let i in pxy.info){
@@ -928,8 +977,8 @@ export default {
 		pxy.info=d['info']
 		pxy.struct=d['struct']
 		pxy.opts=d['opts']
-		if (!pxy.opts.color_mode){
-		    pxy.opts.color_mode='code'
+		if (!pxy.opts.colormode){
+		    pxy.opts.colormode='code'
 		}
 
 		// add options for show_code_select
@@ -1102,7 +1151,7 @@ export default {
 	    }
 	},
 	WatchName(){
-	    var cm=this.opts.color_mode;
+	    var cm=this.opts.colormode;
 	    for (let i in this.info){
 		if (!this.info[i].rawname){
 		    this.info[i].rawname=""
@@ -1120,27 +1169,27 @@ export default {
 		    this.info[i].onshow='v'
 		}
 		
-		if (cm=="code"){
-		    if (this.nodeisnotcode(i)){
-			this.info[i].color="blue"
-		    }else{
-			this.info[i].color="black"
-		    }
-		}
-		if (cm=="err"){
-		    if (this.nodeiserr(i)){
-			this.info[i].color="red"
-			
-		    }else{
-			if (this.chderr(i)){
-			    this.info[i].color="black"
-			}else{
-			    this.info[i].color="green"									    
-			}
-			
-		    }
-		    
-		}
+		// if (cm=="code"){
+		//     if (this.nodeisnotcode(i)){
+		// 	this.info[i].color="blue"
+		//     }else{
+		// 	this.info[i].color="black"
+		//     }
+		// }
+		// if (cm=="err"){
+		//     if (this.nodeiserr(i)){
+		// 	this.info[i].color="red"
+		// 	
+		//     }else{
+		// 	if (this.chderr(i)){
+		// 	    this.info[i].color="black"
+		// 	}else{
+		// 	    this.info[i].color="green"									    
+		// 	}
+		// 	
+		//     }
+		//     
+		// }
 	    }
 	},
 	WatchShowAdd(i){
