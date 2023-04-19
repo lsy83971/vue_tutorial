@@ -27,8 +27,6 @@ code_macro = {"$fd" :"fromDataDict",
               "$t" :"toData", 
               "$n" :"node", 
               "$g" :"ti.tree.attr", }
-
-
           
 class treeUserManager:
     def __init__(self):
@@ -178,25 +176,22 @@ def tree():
                "name": "",
                "data": ti.getdata()}
         ct.nodes["root"].receive(res)
+
         ##print([i for i in ct.nodes["root"]. iter()])
         ##res = deepcopy([i for i in ct.nodes["root"]. iter()])
-        res = [i for i in ct.nodes["root"]. iter()]
         #node_res = deepcopy({i:j.stack for i, j in ct.nodes.items()})
-        node_res = {i:j.stack for i, j in ct.nodes.items()}
-
+        
+        res = [i for i in ct.nodes["root"]. iter()]
         add_cnen(res, ct)
+        node_res = {i:j.stack for i, j in ct.nodes.items()}
         add_cnen(node_res, ct)    
 
         for i in res:
-            result_parse.verr(i)
-            i["data"] = beautify(i["data"])
-            i["name_abbr"] = abbrStr(i["name"])
+            formatTrans(i)
 
         for j in node_res.values():
             for i in j:
-                result_parse.verr(i)            
-                i["data"] = beautify(i["data"])
-                i["name_abbr"] = abbrStr(i["name"])
+                formatTrans(i)                
 
         output = dict()
         for i, j in ct.nodes.items():
@@ -204,12 +199,59 @@ def tree():
                 output[i] = j.output
             else:
                 output[i] = j.output.__repr__()
-        print(output)
+        #print(output)
         tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res, "output": output}
-        json.dumps(tr)
+        ti.saved_result = tr
         
     except:
         errinfo = "Error:\n" + traceback.format_exc()
+        ti.saved_result = tr
+        tr = {"error": 1, "errorinfo": errinfo}
+    
+    return json.dumps(tr)
+
+def formatTrans(i):
+    if "hasTrans" in i:
+        return
+    result_parse.verr(i)            
+    i["data"] = beautify(i["data"])
+    i["name_abbr"] = abbrStr(i["name"])
+    i["hasTrans"] = True                
+
+def branch():
+    try:
+        data = json.loads(request.data)
+        ti = tm.getTreeInfo()
+        tmacro = tm.getTreeMacro()
+        ct = ti.tree
+        ct.update_treeinfo(data)
+        
+        tr = ti.saved_result
+        node = data["opts"]["last_active_node"]
+        res = [i for i in ct.nodes[node]. iter()]
+        for i in res:
+            formatTrans(i)
+        res += tr["res"]
+        
+        node_res = {i:j.stack for i, j in ct.nodes.items()}
+        add_cnen(node_res, ct)
+        for j in node_res.values():
+            for i in j:
+                formatTrans(i)                
+        
+        output = dict()
+        for i, j in ct.nodes.items():
+            if isinstance(j.output, str):
+                output[i] = j.output
+            else:
+                output[i] = j.output.__repr__()
+                
+        tr = {"error": 0, "errorinfo": "", "res": res, "node_res": node_res, "output": output}
+        ti.saved_result = tr
+        
+    except:
+        errinfo = "Error:\n" + traceback.format_exc()
+        ti.saved_result = tr
         tr = {"error": 1, "errorinfo": errinfo}
     
     return json.dumps(tr)
@@ -227,6 +269,7 @@ if __name__ == "__main__":
     app.config['SECRET_KEY'] = os.urandom(24)
     app.add_url_rule("/flask/loaddata", "loaddata", loaddata, methods=["GET", "POST"])
     app.add_url_rule("/flask/tree", "tree", tree, methods=["GET", "POST"])
+    app.add_url_rule("/flask/branch", "branch", branch, methods=["GET", "POST"])    
     app.add_url_rule("/flask/code", "code", code, methods=["GET", "POST"])
     app.add_url_rule("/flask/clear", "clear", clear, methods=["GET", "POST"])
     app.add_url_rule("/flask/revert", "revert", revert, methods=["GET", "POST"])

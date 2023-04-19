@@ -30,7 +30,6 @@ def pd2str(tree):
     return pdform(tree, f=pdformstr)
 
 def beautify(x):
-    print(type(x))
     res = dict()
     res["raw_data"] = pd2str(x)
     if isinstance(x, dict):

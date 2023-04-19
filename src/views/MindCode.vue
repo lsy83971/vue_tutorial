@@ -9,12 +9,10 @@
 	      >File</button>
       <button class="btn btn-primary" type="button"
 	      @click='FlaskSendTree()'>Run</button>
-      <!-- button class="btn btn-primary" type="button"	      
-	      @click='FlaskClearTree()'>clear</button -->
+      <button class="btn btn-primary" type="button"
+	      @click='FlaskSendBranch()'>Part</button>
       <button class="btn btn-primary" type="button"
 	      @click='RevertTree()'>Recover</button>
-      <!-- button class="btn btn-primary" type="button" 
-	      @click='showcode()'>code</button-->
       <button class="btn btn-primary"
 	      data-bs-toggle="collapse"
 	      href="#multiCollapseExample2"
@@ -881,6 +879,35 @@ export default {
 			alert("python raise error; See traceback in codeblock")			
 		    }
 		}))
+	    }catch(err){
+		alert("sendTreeErr:"+err.message)
+	    }
+	    
+	},
+	FlaskSendBranch(){
+	    try{
+		var s=this.IOTreeInfo();
+		if (s.opts.last_active_node==0){
+		    alert("not active")		    
+		}else{
+		    this.opts.active_result_node=0;
+		    utils.post('flask/branch',s,(response => {
+			if (response.data['error']==0){
+			    pxy.node_res=response.data['node_res'];
+			    pxy.res=response.data['res'];
+			    pxy.nodeOutput=response.data['output'];
+			    pxy.CountErr();
+			    pxy.CountChdErr();
+			    for (let i in pxy.info){
+				pxy.info[i].output=pxy.nodeOutput[i]
+			    }
+			    alert("run tree success")
+		    }else{
+			pxy.code_res=response.data['errorinfo']
+			alert("python raise error; See traceback in codeblock")
+		    }
+		    }))		    
+		}
 	    }catch(err){
 		alert("sendTreeErr:"+err.message)
 	    }

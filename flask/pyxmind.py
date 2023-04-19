@@ -127,6 +127,13 @@ class calcNode:
             self.done_once = False
         return self
 
+    def alter_code(self, code):
+        self.rawcode = code
+        self.ci = codeParser(self.rawcode)
+        self.ci.parse(self.macro)
+        if self.ci.h0 == "once":
+            self.done_once = False
+
     def result(self):
         try:
             return deepcopy({"data": self.toData,
@@ -355,6 +362,29 @@ class calcTree:
             n = self._node_cls(macro=self._macro).from_nodeinfo(nodeinfo)
             self.nodes[i] = n
 
+        for i, j in self.nodes.items():
+            j.link(self)
+        return self
+
+    def update_treeinfo(self, tree):
+        self.info = tree['info']
+        self.struct = tree['struct']
+        self.codes = {i:j["v"] for i, j in self.info.items()}
+        self.sur = {i:j["sur"] for i, j in self.info.items()}
+        #self.nodes = dict()
+        for i, j in self.info.items():
+            nodeinfo = {
+                "name": j["name"], 
+                "id": i, 
+                "code": j["v"], 
+                "chd": self.struct[i], 
+                "sur": j["sur"]}
+
+            if i not in self.nodes:
+                n = self._node_cls(macro=self._macro).from_nodeinfo(nodeinfo)
+                self.nodes[i] = n
+            else:
+                self.nodes[i]. from_nodeinfo(nodeinfo)
         for i, j in self.nodes.items():
             j.link(self)
         return self
